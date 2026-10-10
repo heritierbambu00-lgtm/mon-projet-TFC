@@ -1,0 +1,6 @@
+- [x] `[x]` Refondre `HistoryPage` en mode Dark Premium
+- [x] `[x]` Refondre `MissionVisionPage` en mode Dark Premium
+- [x] `[x]` Refondre `CommitteePage` en mode Dark Premium
+- [x] `[x]` Refondre `AnthemPage` en mode Dark Premium
+- [/] `[/]` Créer les éditeurs pour Hymne et Statuts
+- [x] `[x]` Vérifier l'unité visuelle de tout le bloc "A Propos"

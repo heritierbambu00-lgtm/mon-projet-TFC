@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "689157069231",
+    "project_id": "istm-mahagi",
+    "storage_bucket": "istm-mahagi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689157069231:android:7f9701ae52850e2483f75a",
+        "android_client_info": {
+          "package_name": "com.example.istm_mahagi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHjeTTN3dl0LsWm1L_W59piFEaKXxEPps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
