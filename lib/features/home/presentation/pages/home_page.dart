@@ -71,7 +71,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'Avez-vous une question ? +243 994 345 975',
+                            'Avez-vous une question ? +243 814 313 997',
                             style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                           if (!Responsive.isMobile(context))
@@ -255,12 +255,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: _AnnouncementSection(),
               ),
 
-              // Nouvelles Récentes Section
+              // Nouvelles Récentes Section (Dynamique Firestore avec Fallbacks)
               SliverToBoxAdapter(
                 child: _NewsSection(),
               ),
 
-              // Gallery Strip Section (Défilé Photos)
+              // Gallery Strip Section (Défilé Photos Dynamique)
               SliverToBoxAdapter(
                 child: _GalleryBannerStrip(),
               ),
@@ -313,12 +313,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // Domains / Nos Domaines Section
+              // Domains / Nos Domaines Section (Dynamique Firestore)
               SliverToBoxAdapter(
                 child: _DomainsSection(),
               ),
 
-              // Committee Section (Membres du COGE)
+              // Committee Section (Membres du COGE Dynamique Firestore)
               SliverToBoxAdapter(
                 child: _CommitteeSection(),
               ),
@@ -754,32 +754,8 @@ class _AnnouncementSection extends StatelessWidget {
 class _NewsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final newsAsync = ref.watch(newsStreamProvider);
     final isMobile = Responsive.isMobile(context);
-
-    // Actualités Référence UAC
-    final List<Map<String, String>> referenceNews = [
-      {
-        'title': 'ISTM Mahagi : Nomination des membres du personnel technique et ouvrier pour l’année 2026-2027...',
-        'date': '02 Nov',
-        'time': '10:52:15',
-        'location': 'Cabinet du Recteur',
-        'image': 'https://uaconline.edu.cd/imagenews/NN18.jpeg',
-      },
-      {
-        'title': 'Rectorat : Affectation des autorités décanales pour l’année académique 2026-2027...',
-        'date': '02 Nov',
-        'time': '10:48:50',
-        'location': 'Cabinet du Recteur',
-        'image': 'https://uaconline.edu.cd/imagenews/NN14.jpeg',
-      },
-      {
-        'title': 'Encadrements pédagogiques : Des Alumni transmettent le flambeau de l’expérience aux jeunes étudiants...',
-        'date': '02 Nov',
-        'time': '10:46:39',
-        'location': 'Cabinet du Recteur',
-        'image': 'https://uaconline.edu.cd/imagenews/NN11.jpeg',
-      },
-    ];
 
     return Container(
       width: double.infinity,
@@ -796,24 +772,71 @@ class _NewsSection extends ConsumerWidget {
                 isDark: false,
               ),
               const SizedBox(height: 50),
-              Wrap(
-                spacing: 30,
-                runSpacing: 30,
-                alignment: WrapAlignment.center,
-                children: referenceNews
-                    .map((article) => _newsItem(
-                      context, 
-                      article['title']!, 
-                      article['date']!, 
-                      article['time']!, 
-                      article['location']!, 
-                      article['image']!, 
-                      isMobile
-                    ))
-                    .toList(),
+              newsAsync.when(
+                data: (articles) {
+                  final List<Map<String, String>> newsList = [];
+                  if (articles.isNotEmpty) {
+                    for (var a in articles) {
+                      newsList.add({
+                        'title': a.title,
+                        'date': "${a.date.day.toString().padLeft(2, '0')}/${a.date.month.toString().padLeft(2, '0')}",
+                        'time': "${a.date.hour.toString().padLeft(2, '0')}:${a.date.minute.toString().padLeft(2, '0')}",
+                        'location': 'ISTM Mahagi',
+                        'image': a.imageUrl,
+                      });
+                    }
+                  } else {
+                    newsList.addAll([
+                      {
+                        'title': 'ISTM Mahagi : Nomination des membres du personnel technique et ouvrier...',
+                        'date': '02 Nov',
+                        'time': '10:52:15',
+                        'location': 'Cabinet du Recteur',
+                        'image': 'https://uaconline.edu.cd/imagenews/NN18.jpeg',
+                      },
+                      {
+                        'title': 'Rectorat : Affectation des autorités décanales pour l’année académique...',
+                        'date': '02 Nov',
+                        'time': '10:48:50',
+                        'location': 'Cabinet du Recteur',
+                        'image': 'https://uaconline.edu.cd/imagenews/NN14.jpeg',
+                      },
+                      {
+                        'title': 'Encadrements pédagogiques : Des Alumni transmettent le flambeau de l’expérience...',
+                        'date': '02 Nov',
+                        'time': '10:46:39',
+                        'location': 'Cabinet du Recteur',
+                        'image': 'https://uaconline.edu.cd/imagenews/NN11.jpeg',
+                      },
+                    ]);
+                  }
+
+                  return Column(
+                    children: [
+                      Wrap(
+                        spacing: 30,
+                        runSpacing: 30,
+                        alignment: WrapAlignment.center,
+                        children: newsList.take(isMobile ? 1 : 3)
+                            .map((article) => _newsItem(
+                              context, 
+                              article['title']!, 
+                              article['date']!, 
+                              article['time']!, 
+                              article['location']!, 
+                              article['image']!, 
+                              isMobile
+                            ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 50),
+                      _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
               ),
-              const SizedBox(height: 50),
-              _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
             ],
           ),
         ),
@@ -848,17 +871,29 @@ class _NewsSection extends ConsumerWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 child: Stack(
                   children: [
-                    Image.network(
-                      image, 
-                      height: isMobile ? 200 : 240, 
-                      width: double.infinity, 
-                      fit: BoxFit.cover, 
-                      errorBuilder: (_, __, ___) => Container(
-                        height: isMobile ? 200 : 240,
-                        color: const Color(0xFF2D3E50),
-                        child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
-                      )
-                    ),
+                    image.startsWith('http') 
+                      ? Image.network(
+                          image, 
+                          height: isMobile ? 200 : 240, 
+                          width: double.infinity, 
+                          fit: BoxFit.cover, 
+                          errorBuilder: (_, __, ___) => Container(
+                            height: isMobile ? 200 : 240,
+                            color: const Color(0xFF2D3E50),
+                            child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
+                          )
+                        )
+                      : Image.asset(
+                          image, 
+                          height: isMobile ? 200 : 240, 
+                          width: double.infinity, 
+                          fit: BoxFit.cover, 
+                          errorBuilder: (_, __, ___) => Container(
+                            height: isMobile ? 200 : 240,
+                            color: const Color(0xFF2D3E50),
+                            child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
+                          )
+                        ),
                     Positioned(
                       top: 15,
                       left: 15,
@@ -929,19 +964,11 @@ class _NewsSection extends ConsumerWidget {
   }
 }
 
-class _GalleryBannerStrip extends StatelessWidget {
+class _GalleryBannerStrip extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final galleryAsync = ref.watch(galleryStreamProvider);
     final isMobile = Responsive.isMobile(context);
-
-    final List<String> galleryImages = [
-      'https://uaconline.edu.cd/imagegalerie/rentreeacademique9.JPG',
-      'https://uaconline.edu.cd/imagegalerie/rentreeacademique8.JPG',
-      'https://uaconline.edu.cd/imagegalerie/rentreeacademique7.JPG',
-      'https://uaconline.edu.cd/imagegalerie/rentreeacademique6.JPG',
-      'https://uaconline.edu.cd/imagegalerie/rentreeacademique5.JPG',
-      'https://uaconline.edu.cd/imagegalerie/rentreeacademique3.JPG',
-    ];
 
     return Container(
       width: double.infinity,
@@ -954,29 +981,49 @@ class _GalleryBannerStrip extends StatelessWidget {
             children: [
               const Text('GALERIE EN IMAGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 2)),
               const SizedBox(height: 30),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: galleryImages.map((img) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: InkWell(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryPage())),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15)],
+              galleryAsync.when(
+                data: (items) {
+                  final List<String> images = items.map((i) => i.imageUrl).where((img) => img.isNotEmpty).toList();
+                  if (images.isEmpty) {
+                    images.addAll([
+                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique9.JPG',
+                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique8.JPG',
+                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique7.JPG',
+                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique6.JPG',
+                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique5.JPG',
+                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique3.JPG',
+                    ]);
+                  }
+
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: images.map((img) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: InkWell(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryPage())),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15)],
+                            ),
+                            child: CircleAvatar(
+                              radius: isMobile ? 45 : 65,
+                              backgroundImage: (img.startsWith('http'))
+                                  ? NetworkImage(img)
+                                  : AssetImage(img) as ImageProvider,
+                            ),
+                          ),
                         ),
-                        child: CircleAvatar(
-                          radius: isMobile ? 45 : 65,
-                          backgroundImage: NetworkImage(img),
-                        ),
-                      ),
+                      )).toList(),
                     ),
-                  )).toList(),
-                ),
+                  );
+                },
+                loading: () => const CircularProgressIndicator(color: AppColors.accentYellow),
+                error: (_, __) => const SizedBox.shrink(),
               ),
             ],
           ),
@@ -986,43 +1033,11 @@ class _GalleryBannerStrip extends StatelessWidget {
   }
 }
 
-class _DomainsSection extends StatelessWidget {
+class _DomainsSection extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final facultiesAsync = ref.watch(homeFacultiesProvider);
     final isMobile = Responsive.isMobile(context);
-
-    final List<Map<String, String>> domains = [
-      {
-        'id': 'SHS',
-        'title': 'Sciences de l\'Homme et de la Société',
-        'email': 'schommeetsociete@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagedomaine/lettres.jpg',
-      },
-      {
-        'id': 'SEG',
-        'title': 'Sciences Economiques et de Gestion',
-        'email': 'sceconomiquesetgestion@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagedomaine/economie.jpg',
-      },
-      {
-        'id': 'SAE',
-        'title': 'Sciences Agronomiques et Environnement',
-        'email': 'scdeveloppement@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagedomaine/developpement.jpg',
-      },
-      {
-        'id': 'ST',
-        'title': 'Sciences et Technologie',
-        'email': 'scpolytechnique@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagedomaine/polytechnique.jpg',
-      },
-      {
-        'id': 'SPE',
-        'title': 'Sciences Psychologiques de l\'Education',
-        'email': 'scpsychologiques@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagedomaine/psychologie.jpg',
-      },
-    ];
 
     return Container(
       width: double.infinity,
@@ -1039,16 +1054,61 @@ class _DomainsSection extends StatelessWidget {
               ),
               const SizedBox(height: 15),
               const Text(
-                'L\'ISTM Mahagi organise 5 domaines principaux d\'enseignement. Dans chaque domaine, il y a les différentes filières de formation d\'élite. Cliquez afin de lire le détail.',
+                'L\'ISTM Mahagi organise les domaines principaux d\'enseignement. Dans chaque domaine, il y a les différentes filières de formation d\'élite. Cliquez afin de lire le détail.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 50),
-              Wrap(
-                spacing: 30,
-                runSpacing: 30,
-                alignment: WrapAlignment.center,
-                children: domains.map((d) => _domainCard(context, d['title']!, d['email']!, d['image']!, isMobile)).toList(),
+              facultiesAsync.when(
+                data: (faculties) {
+                  final List<Map<String, String>> domainsList = [];
+                  if (faculties.isNotEmpty) {
+                    for (var f in faculties) {
+                      domainsList.add({
+                        'title': f.nomFaculte,
+                        'email': '${f.nomFaculte.toLowerCase().replaceAll(' ', '')}@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagedomaine/lettres.jpg',
+                      });
+                    }
+                  } else {
+                    domainsList.addAll([
+                      {
+                        'title': 'Sciences de l\'Homme et de la Société',
+                        'email': 'schommeetsociete@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagedomaine/lettres.jpg',
+                      },
+                      {
+                        'title': 'Sciences Economiques et de Gestion',
+                        'email': 'sceconomiquesetgestion@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagedomaine/economie.jpg',
+                      },
+                      {
+                        'title': 'Sciences Agronomiques et Environnement',
+                        'email': 'scdeveloppement@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagedomaine/developpement.jpg',
+                      },
+                      {
+                        'title': 'Sciences et Technologie',
+                        'email': 'scpolytechnique@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagedomaine/polytechnique.jpg',
+                      },
+                      {
+                        'title': 'Sciences Psychologiques de l\'Education',
+                        'email': 'scpsychologiques@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagedomaine/psychologie.jpg',
+                      },
+                    ]);
+                  }
+
+                  return Wrap(
+                    spacing: 30,
+                    runSpacing: 30,
+                    alignment: WrapAlignment.center,
+                    children: domainsList.map((d) => _domainCard(context, d['title']!, d['email']!, d['image']!, isMobile)).toList(),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
               ),
               const SizedBox(height: 50),
               Container(
@@ -1141,45 +1201,8 @@ class _DomainsSection extends StatelessWidget {
 class _CommitteeSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final committeeAsync = ref.watch(committeeStreamProvider);
     final isMobile = Responsive.isMobile(context);
-
-    final List<Map<String, String>> cogeMembers = [
-      {
-        'name': 'Dr. KAVULA MAWAZO Sikirivwa, PhD',
-        'title': 'Professeur Associé',
-        'role': 'Recteur',
-        'email': 'rectorat@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagecoge/mawazo.jpg',
-      },
-      {
-        'name': 'Dr. KANYORORO KISALI Jean-Chrysostome, PhD',
-        'title': 'Professeur',
-        'role': 'Secrétaire Général Académique',
-        'email': 'academique@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagecoge/kanyororo.jpg',
-      },
-      {
-        'name': 'Dr. KASEREKA KIBANDA Wilfrid, PhD',
-        'title': 'Professeur',
-        'role': 'Secrétaire Général de Recherche',
-        'email': 'contact@ishango-uac.net',
-        'image': 'https://uaconline.edu.cd/imagecoge/kibanda.jpg',
-      },
-      {
-        'name': 'Dr. PALUKU KAMILI Jean-Paul, PhD',
-        'title': 'Professeur Associé',
-        'role': 'Secrétaire Général Administratif',
-        'email': 'administratif@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagecoge/kamili.jpg',
-      },
-      {
-        'name': 'Ir. KATEMBO KASOLENE Moïse',
-        'title': 'Assistant Deux',
-        'role': 'Administrateur de Budget',
-        'email': 'administeur.budget@uaconline.edu.cd',
-        'image': 'https://uaconline.edu.cd/imagecoge/kasolene.jpg',
-      },
-    ];
 
     return Container(
       width: double.infinity,
@@ -1195,18 +1218,75 @@ class _CommitteeSection extends ConsumerWidget {
                 title: 'Membres du COGE',
               ),
               const SizedBox(height: 50),
-              Wrap(
-                spacing: 25,
-                runSpacing: 25,
-                alignment: WrapAlignment.center,
-                children: cogeMembers.map((m) => _memberCard(
-                  m['name']!, 
-                  m['title']!, 
-                  m['role']!, 
-                  m['email']!, 
-                  m['image']!, 
-                  isMobile
-                )).toList(),
+              committeeAsync.when(
+                data: (members) {
+                  final List<Map<String, String>> cogeMembers = [];
+                  if (members.isNotEmpty) {
+                    for (var m in members) {
+                      cogeMembers.add({
+                        'name': m.nomComplet,
+                        'title': m.categorie,
+                        'role': m.fonction,
+                        'email': 'contact@istm-mahagi.edu',
+                        'image': m.photoMembre,
+                      });
+                    }
+                  } else {
+                    cogeMembers.addAll([
+                      {
+                        'name': 'Dr. KAVULA MAWAZO Sikirivwa, PhD',
+                        'title': 'Professeur Associé',
+                        'role': 'Recteur',
+                        'email': 'rectorat@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagecoge/mawazo.jpg',
+                      },
+                      {
+                        'name': 'Dr. KANYORORO KISALI Jean-Chrysostome, PhD',
+                        'title': 'Professeur',
+                        'role': 'Secrétaire Général Académique',
+                        'email': 'academique@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagecoge/kanyororo.jpg',
+                      },
+                      {
+                        'name': 'Dr. KASEREKA KIBANDA Wilfrid, PhD',
+                        'title': 'Professeur',
+                        'role': 'Secrétaire Général de Recherche',
+                        'email': 'recherche@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagecoge/kibanda.jpg',
+                      },
+                      {
+                        'name': 'Dr. PALUKU KAMILI Jean-Paul, PhD',
+                        'title': 'Professeur Associé',
+                        'role': 'Secrétaire Général Administratif',
+                        'email': 'administratif@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagecoge/kamili.jpg',
+                      },
+                      {
+                        'name': 'Ir. KATEMBO KASOLENE Moïse',
+                        'title': 'Assistant Deux',
+                        'role': 'Administrateur de Budget',
+                        'email': 'budget@istm-mahagi.edu',
+                        'image': 'https://uaconline.edu.cd/imagecoge/kasolene.jpg',
+                      },
+                    ]);
+                  }
+
+                  return Wrap(
+                    spacing: 25,
+                    runSpacing: 25,
+                    alignment: WrapAlignment.center,
+                    children: cogeMembers.map((m) => _memberCard(
+                      m['name']!, 
+                      m['title']!, 
+                      m['role']!, 
+                      m['email']!, 
+                      m['image']!, 
+                      isMobile
+                    )).toList(),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
               ),
             ],
           ),
@@ -1422,8 +1502,8 @@ class _ContactQuickInfo extends StatelessWidget {
                 alignment: WrapAlignment.center,
                 children: [
                   _infoTile(Icons.location_on_rounded, 'Localisation', 'RDC, Ituri, Ville de Mahagi', isMobile),
-                  _infoTile(Icons.phone_rounded, 'Ligne Directe', '+243 994 345 975', isMobile),
-                  _infoTile(Icons.alternate_email_rounded, 'Email Officiel', 'contact@uaconline.edu.cd', isMobile),
+                  _infoTile(Icons.phone_rounded, 'Ligne Directe', '+243 814 313 997', isMobile),
+                  _infoTile(Icons.alternate_email_rounded, 'Email Officiel', 'info@istm-mahagi.edu', isMobile),
                 ],
               ),
             ],
