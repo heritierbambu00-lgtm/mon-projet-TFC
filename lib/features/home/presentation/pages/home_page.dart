@@ -59,59 +59,40 @@ class _HomePageState extends ConsumerState<HomePage> {
         children: [
           CustomScrollView(
             slivers: [
-              // Top Information Bar
+              // Top Information Bar (Modèle UAC avec onglet bleu biseauté)
               SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      color: const Color(0xFF2D3E50),
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Avez-vous une question ? +243 814 313 997',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
-                          ),
-                          if (!Responsive.isMobile(context))
-                            Row(
+                child: Container(
+                  width: double.infinity,
+                  color: const Color(0xFF2D3E50),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        child: Text(
+                          'Avez-vous une question ? +243 814 313 997',
+                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      if (!Responsive.isMobile(context))
+                        ClipPath(
+                          clipper: _AngledTabClipper(),
+                          child: Container(
+                            color: const Color(0xFF0088FF),
+                            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+                            child: Row(
                               children: [
-                                _headerTopLink('Alumni', () => _navigateTo(const NewsPage())),
-                                const Text(' | ', style: TextStyle(color: Colors.white38)),
-                                _headerTopLink('Portail Étudiant', () => _openLogin('Étudiant')),
-                                const Text(' | ', style: TextStyle(color: Colors.white38)),
-                                _headerTopLink('Portail Enseignant', () => _openLogin('Enseignant')),
+                                _topBarPortailDropdown(),
+                                const Text('  |  ', style: TextStyle(color: Colors.white70)),
+                                _topBarIconLink(Icons.menu_book_rounded, 'Bibliothèque', () => _navigateTo(const ELearningPage())),
+                                const Text('  |  ', style: TextStyle(color: Colors.white70)),
+                                _topBarIconLink(Icons.local_fire_department_rounded, 'Étincelle', () => _navigateTo(const ELearningPage())),
                               ],
                             ),
-                        ],
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryBlue,
-                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20)),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextButton(
-                              onPressed: () => _navigateTo(const ELearningPage()),
-                              child: const Text('📚 Bibliothèque Numérique', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                            ),
-                            const Text('|', style: TextStyle(color: Colors.white70)),
-                            TextButton(
-                              onPressed: () => _navigateTo(const ELearningPage()),
-                              child: const Text('✨ E-Learning', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
@@ -159,8 +140,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   if (Responsive.isDesktop(context))
                     Row(
                       children: [
-                        _navItem('ACCUEIL', onTap: () {}),
-                        _navDropdown('À PROPOS', {
+                        _navIconItem(Icons.home_rounded, 'ACCUEIL', onTap: () {}),
+                        _navIconDropdown(Icons.inbox_rounded, 'À PROPOS', {
                           'Galerie photos': const GalleryPage(),
                           'Personnel': const CommitteePage(),
                           'Calendrier': const CalendarPage(),
@@ -169,17 +150,40 @@ class _HomePageState extends ConsumerState<HomePage> {
                           'Mission et Vision': const MissionVisionPage(),
                           'Statuts': const StatutesPage(),
                         }),
-                        _navItem('HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
-                        _navItem('E-LEARNING', onTap: () => _navigateTo(const ELearningPage())),
-                        _navItem('CONTACT', onTap: () => _navigateTo(const ContactPage())),
+                        _navIconItem(Icons.access_time_rounded, 'HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
+                        _navIconDropdown(Icons.school_rounded, 'DOMAINE', {
+                          'Sciences de l\'Homme et de la Société': const ELearningPage(),
+                          'Sciences Economiques et de Gestion': const ELearningPage(),
+                          'Sciences Agronomiques et Environnement': const ELearningPage(),
+                          'Sciences et Technologie': const ELearningPage(),
+                          'Sciences Psychologiques de l\'Education': const ELearningPage(),
+                        }),
+                        _navIconDropdown(Icons.laptop_chromebook_rounded, 'E-LEARNING', {
+                          'Portail Enseignant': const ELearningPage(),
+                          'Portail Etudiant': const ELearningPage(),
+                        }),
+                        _navIconDropdown(Icons.vpn_key_rounded, 'INTRANET', {
+                          'Décanat': const ELearningPage(),
+                          'Staff': const ELearningPage(),
+                        }),
+                        _navIconItem(Icons.email_rounded, 'CONTACT', onTap: () => _navigateTo(const ContactPage())),
+                        
+                        // Bouton de recherche bleu carré comme sur la capture
+                        Container(
+                          margin: const EdgeInsets.only(left: 8, right: 15),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0088FF),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: IconButton(
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                            padding: EdgeInsets.zero,
+                            icon: Icon(_isSearchOpen ? Icons.close : Icons.search_rounded, color: Colors.white, size: 18),
+                            onPressed: () => setState(() => _isSearchOpen = !_isSearchOpen),
+                          ),
+                        ),
                       ],
                     ),
-                  IconButton(
-                    icon: Icon(_isSearchOpen ? Icons.close : Icons.search_rounded, color: AppColors.primaryBlue),
-                    onPressed: () => setState(() => _isSearchOpen = !_isSearchOpen),
-                  ),
-                  const SizedBox(width: 5),
-                  _portalButton(),
                   // Pas de menu burger sur écran d'ordinateur (desktop)
                   if (!Responsive.isDesktop(context)) ...[
                     const SizedBox(width: 5),
@@ -187,8 +191,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       icon: const Icon(Icons.menu_rounded, color: AppColors.primaryBlue, size: 30),
                       onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                     ),
+                    const SizedBox(width: 10),
                   ],
-                  const SizedBox(width: 10),
                 ],
               ),
 
@@ -246,7 +250,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: _GalleryBannerStrip(),
               ),
 
-              // Stats Section (L'Institut en Chiffres - Dynamique)
+              // Stats Section (L'Institut en Chiffres)
               SliverToBoxAdapter(
                 child: Consumer(
                   builder: (context, ref, child) {
@@ -332,13 +336,52 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _headerTopLink(String text, dynamic target) {
+  Widget _topBarPortailDropdown() {
+    return PopupMenuButton<String>(
+      offset: const Offset(0, 35),
+      elevation: 20,
+      shadowColor: Colors.black.withOpacity(0.3),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(Icons.person_rounded, color: Colors.white, size: 14),
+          SizedBox(width: 5),
+          Text(
+            'Portail',
+            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+          Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 14),
+        ],
+      ),
+      onSelected: _openLogin,
+      itemBuilder: (context) => [
+        'Étudiant',
+        'Enseignant',
+        'Staff',
+        'Décanat',
+        'Comptable',
+      ].map((role) => PopupMenuItem<String>(
+        value: role,
+        child: Text(role, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+      )).toList(),
+    );
+  }
+
+  Widget _topBarIconLink(IconData icon, String title, VoidCallback onTap) {
     return InkWell(
-      onTap: () {
-        if (target is Widget) _navigateTo(target);
-        if (target is Function) target();
-      },
-      child: Text(text, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 5),
+          Text(
+            title,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 
@@ -408,42 +451,45 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _navItem(String title, {VoidCallback? onTap}) {
-    return TextButton(
+  Widget _navIconItem(IconData icon, String title, {VoidCallback? onTap}) {
+    return TextButton.icon(
       onPressed: onTap ?? () {},
-      child: Text(
+      icon: Icon(icon, size: 14, color: const Color(0xFF2D3E50)),
+      label: Text(
         title,
         style: const TextStyle(
           color: AppColors.textMain,
           fontWeight: FontWeight.w700,
-          fontSize: 12,
+          fontSize: 11,
           letterSpacing: 0.5
         ),
       ),
     );
   }
 
-  Widget _navDropdown(String title, Map<String, Widget> items) {
+  Widget _navIconDropdown(IconData icon, String title, Map<String, Widget> items) {
     return PopupMenuButton<Widget>(
       offset: const Offset(0, 45),
       elevation: 20,
       shadowColor: Colors.black.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(icon, size: 14, color: const Color(0xFF2D3E50)),
+            const SizedBox(width: 4),
             Text(
               title,
               style: const TextStyle(
                 color: AppColors.textMain,
                 fontWeight: FontWeight.w700,
-                fontSize: 12,
+                fontSize: 11,
                 letterSpacing: 0.5,
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textMuted),
+            const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: AppColors.textMuted),
           ],
         ),
       ),
@@ -451,57 +497,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       itemBuilder: (context) => items.entries.map((entry) {
         return PopupMenuItem<Widget>(
           value: entry.value,
-          child: Text(entry.key, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          child: Text(entry.key, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         );
       }).toList(),
-    );
-  }
-
-  Widget _portalButton() {
-    final bool isMobile = Responsive.isMobile(context);
-
-    return PopupMenuButton<String>(
-      offset: Offset(0, isMobile ? 40 : 50),
-      elevation: 20,
-      shadowColor: Colors.black.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 18, 
-          vertical: isMobile ? 8 : 10
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2D3E50),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.account_circle, color: Colors.white, size: isMobile ? 16 : 18),
-            SizedBox(width: isMobile ? 6 : 8),
-            Text(
-              'PORTAIL',
-              style: TextStyle(
-                color: Colors.white, 
-                fontWeight: FontWeight.w900, 
-                fontSize: isMobile ? 11 : 12,
-                letterSpacing: 1.0,
-              ),
-            ),
-          ],
-        ),
-      ),
-      onSelected: _openLogin,
-      itemBuilder: (context) => [
-        'Étudiant',
-        'Enseignant',
-        'Staff',
-        'Décanat',
-        'Comptable'
-      ].map((role) => PopupMenuItem<String>(
-        value: role,
-        child: Text(role, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-      )).toList(),
     );
   }
 
@@ -614,6 +612,22 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
+}
+
+class _AngledTabClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(22, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
 class _QuickButtonsBar extends StatelessWidget {
