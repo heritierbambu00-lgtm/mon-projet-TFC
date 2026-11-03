@@ -89,7 +89,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             const Text('|', style: TextStyle(color: Colors.white)),
                             TextButton(
                               onPressed: () {},
-                              child: const Text('✨ Etincelle', style: TextStyle(color: Colors.white, fontSize: 12)),
+                              child: const Text('✨ Étincelle', style: TextStyle(color: Colors.white, fontSize: 12)),
                             ),
                           ],
                         ),
@@ -105,7 +105,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 floating: true,
                 pinned: true,
                 elevation: 0,
-                backgroundColor: Colors.white.withOpacity(0.7),
+                backgroundColor: Colors.white.withOpacity(0.85),
                 automaticallyImplyLeading: false,
                 flexibleSpace: ClipRect(
                   child: BackdropFilter(
@@ -186,7 +186,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: _GalleryPreviewSection(),
               ),
 
-              // Stats Section
+              // Stats Section (Prestige / Chiffres)
               SliverToBoxAdapter(
                 child: Consumer(
                   builder: (context, ref, child) {
@@ -195,42 +195,47 @@ class _HomePageState extends ConsumerState<HomePage> {
                     
                     return statsAsync.when(
                       data: (stats) => Container(
+                        width: double.infinity,
                         padding: EdgeInsets.symmetric(
-                          vertical: isMobile ? 80 : 120, 
+                          vertical: isMobile ? 60 : 100, 
                           horizontal: 20
                         ),
                         decoration: const BoxDecoration(
-                          color: AppColors.surface,
+                          color: AppColors.deepNavy,
                           image: DecorationImage(
                             image: AssetImage('assets/images/slider2.jpg'),
                             fit: BoxFit.cover,
-                            opacity: 0.05,
+                            opacity: 0.08,
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            _SectionHeader(
-                              subtitle: 'PRESTIGE',
-                              title: 'L\'Institut en Chiffres',
+                        child: Center(
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 1280),
+                            child: Column(
+                              children: [
+                                const _SectionHeader(
+                                  subtitle: 'PRESTIGE ET EXCELLENCE',
+                                  title: 'L\'Institut en Chiffres',
+                                  isDark: true,
+                                ),
+                                const SizedBox(height: 60),
+                                Wrap(
+                                  spacing: 25,
+                                  runSpacing: 25,
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    _buildStatCard(Icons.history_toggle_off, stats['annees']!, 'Années d\'expérience', context),
+                                    _buildStatCard(Icons.school_outlined, stats['etudiants']!, 'Étudiants formés', context),
+                                    _buildStatCard(Icons.account_tree_outlined, stats['departements']!, 'Départements actifs', context),
+                                    _buildStatCard(Icons.verified_user_outlined, stats['homologation']!, 'Diplômes homologués', context),
+                                  ],
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 70),
-                            Center(
-                              child: Wrap(
-                                spacing: 25,
-                                runSpacing: 25,
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  _buildStatCard(Icons.history_toggle_off, stats['annees']!, 'Années d\'expérience', context),
-                                  _buildStatCard(Icons.school_outlined, stats['etudiants']!, 'Étudiants formés', context),
-                                  _buildStatCard(Icons.account_tree_outlined, stats['departements']!, 'Départements actifs', context),
-                                  _buildStatCard(Icons.verified_user_outlined, stats['homologation']!, 'Diplômes homologués', context),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                      loading: () => SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+                      loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator(color: AppColors.accentYellow))),
                       error: (e, _) => const SizedBox.shrink(),
                     );
                   },
@@ -267,7 +272,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           if (showLogin)
             LoginOverlay(
               key: ValueKey('login_$selectedRole'),
-              role: selectedRole ?? '',
+              role: selectedRole,
               onClose: _closeLogin,
             ),
         ],
@@ -279,9 +284,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     final bool isMobile = Responsive.isMobile(context);
     final bool isTablet = Responsive.isTablet(context);
     
-    double width = 250;
+    double width = 260;
     if (isMobile) {
-      width = MediaQuery.of(context).size.width * 0.44;
+      width = MediaQuery.of(context).size.width * 0.42;
     } else if (isTablet) {
       width = 220;
     }
@@ -289,38 +294,38 @@ class _HomePageState extends ConsumerState<HomePage> {
     return PremiumFadeIn(
       child: Container(
         width: width,
-        padding: EdgeInsets.all(isMobile ? 15 : 25),
+        padding: EdgeInsets.all(isMobile ? 18 : 28),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.07),
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F172A).withOpacity(0.04),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(color: const Color(0xFFF1F5F9)),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.05),
+                color: AppColors.accentYellow.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.primaryBlue, size: isMobile ? 24 : 30),
+              child: Icon(icon, color: AppColors.accentYellow, size: isMobile ? 24 : 32),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
             FittedBox(
               child: Text(
                 value,
                 style: TextStyle(
-                  fontSize: isMobile ? 28 : 36,
+                  fontSize: isMobile ? 28 : 38,
                   fontFamily: 'Playfair Display',
                   fontWeight: FontWeight.w900,
-                  color: AppColors.textMain,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -330,7 +335,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: isMobile ? 9 : 11,
-                color: AppColors.textMuted,
+                color: Colors.white70,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
               ),
@@ -638,221 +643,331 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-class _CommitteeSection extends ConsumerWidget {
+class _NewsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final committeeAsync = ref.watch(committeeStreamProvider);
+    final newsAsync = ref.watch(newsStreamProvider);
     final isMobile = Responsive.isMobile(context);
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 80 : 120, horizontal: 20),
-      color: AppColors.surface,
-      child: Column(
-        children: [
-          _SectionHeader(
-            subtitle: 'COMITÉ DE GESTION',
-            title: 'Les Garants de l\'Excellence',
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      color: const Color(0xFFF1F5F9), // Soft slate background
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            children: [
+              const _SectionHeader(
+                subtitle: 'ACTUALITÉS ÉTUDIANTES & INSTITUTIONNELLES',
+                title: 'Les Dernières de l\'Institut',
+                isDark: false,
+              ),
+              const SizedBox(height: 50),
+              newsAsync.when(
+                data: (articles) {
+                  if (articles.isEmpty) return const Text("Aucune actualité pour le moment.", style: TextStyle(color: AppColors.textMuted));
+                  final int count = isMobile ? 1 : 3;
+                  final visibleArticles = articles.take(count).toList();
+                  return Column(
+                    children: [
+                      Wrap(
+                        spacing: 30,
+                        runSpacing: 30,
+                        alignment: WrapAlignment.center,
+                        children: visibleArticles
+                            .map((article) => _newsItem(
+                              context, 
+                              article.title, 
+                              "${article.date.day}/${article.date.month}/${article.date.year}", 
+                              article.imageUrl, 
+                              isMobile
+                            ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 50),
+                      _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              ),
+            ],
           ),
-          const SizedBox(height: 70),
-          committeeAsync.when(
-            data: (members) {
-              if (members.isEmpty) return const Text("Information bientôt disponible.");
-              final visibleMembers = members.take(2).toList();
-              return Column(
-                children: [
-                  Wrap(
-                    spacing: 40,
-                    runSpacing: 50,
-                    alignment: WrapAlignment.center,
-                    children: visibleMembers.map((m) => _memberCard(
-                      context,
-                      m.fonction, 
-                      m.nomComplet, 
-                      m.photoMembre,
-                      isMobile
-                    )).toList(),
-                  ),
-                  const SizedBox(height: 50),
-                  _buildSeeMoreButton(context, CommitteePage(), "VOIR TOUT LE COMITÉ"),
-                ],
-              );
-            },
-            loading: () => Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text("Erreur : $e"),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _memberCard(BuildContext context, String role, String name, String image, bool isMobile) {
+  Widget _newsItem(BuildContext context, String title, String date, String image, bool isMobile) {
+    final double width = isMobile ? double.infinity : 440;
+
     return PremiumFadeIn(
-      child: Container(
-        width: isMobile ? 170 : 250,
-        padding: const EdgeInsets.symmetric(vertical: 30),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withOpacity(0.06),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white, 
-                shape: BoxShape.circle, 
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0F172A).withOpacity(0.08), 
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                  )
-                ]
+      child: _HoverCard(
+        child: Container(
+          width: width,
+          constraints: const BoxConstraints(maxWidth: 480),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withOpacity(0.06),
+                blurRadius: 40,
+                offset: const Offset(0, 15),
               ),
-              child: CircleAvatar(
-                radius: isMobile ? 65 : 95,
-                backgroundColor: Colors.white,
-                backgroundImage: (image.isNotEmpty && image.startsWith('http')) 
-                    ? NetworkImage(image) 
-                    : const AssetImage('assets/images/logo.jpg') as ImageProvider,
-              ),
-            ),
-            const SizedBox(height: 30),
-            Text(
-              name.toUpperCase(),
-              style: TextStyle(
-                fontWeight: FontWeight.w900, 
-                fontSize: isMobile ? 13 : 17, 
-                color: AppColors.textMain, 
-                fontFamily: 'Playfair Display',
-                letterSpacing: 0.5
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                role.toUpperCase(),
-                style: TextStyle(
-                  color: AppColors.primaryBlue, 
-                  fontSize: isMobile ? 9 : 11, 
-                  fontWeight: FontWeight.w900, 
-                  letterSpacing: 1.5
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommitteePage())),
-              child: const Text(
-                'VOIR PLUS',
-                style: TextStyle(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10,
-                  letterSpacing: 1.5
+            ],
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: Stack(
+                  children: [
+                    image.startsWith('http') 
+                      ? Image.network(image, height: isMobile ? 200 : 260, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile))
+                      : Image.asset(image, height: isMobile ? 200 : 260, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile)),
+                    Positioned(
+                      top: 18,
+                      left: 18,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)],
+                        ),
+                        child: Text(
+                          date,
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title, 
+                      maxLines: 2, 
+                      overflow: TextOverflow.ellipsis, 
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900, 
+                        fontSize: isMobile ? 17 : 22, 
+                        color: AppColors.textMain,
+                        fontFamily: 'Playfair Display',
+                        height: 1.25
+                      )
+                    ),
+                    const SizedBox(height: 20),
+                    TextButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage())),
+                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'LIRE LA SUITE', 
+                            style: TextStyle(
+                              color: AppColors.primaryBlue, 
+                              fontWeight: FontWeight.w900, 
+                              fontSize: 11,
+                              letterSpacing: 1.5
+                            )
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primaryBlue),
+                        ],
+                      )
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder(bool isMobile) {
+    return Container(
+      height: isMobile ? 200 : 260,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: AppColors.deepGradient,
+      ),
+      child: const Center(
+        child: Icon(Icons.newspaper_rounded, color: Colors.white38, size: 48),
       ),
     );
   }
 }
 
-class _ValuesSection extends StatelessWidget {
+class _GalleryPreviewSection extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final galleryAsync = ref.watch(galleryStreamProvider);
     final isMobile = Responsive.isMobile(context);
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 80 : 120, horizontal: 20),
-      decoration: const BoxDecoration(
-        color: AppColors.deepNavy,
-        image: DecorationImage(
-          image: AssetImage('assets/images/slider3.jpg'),
-          fit: BoxFit.cover,
-          opacity: 0.05,
-        ),
-      ),
-      child: Column(
-        children: [
-          _SectionHeader(
-            subtitle: 'NOTRE ADN',
-            title: 'Des Valeurs d\'Excellence',
-            isDark: true,
-          ),
-          const SizedBox(height: 70),
-          Wrap(
-            spacing: 40,
-            runSpacing: 50,
-            alignment: WrapAlignment.center,
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      color: Colors.white,
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
             children: [
-              _valueItem(Icons.verified_user_rounded, 'Rigueur Scientifique', 'Une formation médicale exigeante et de pointe.', isMobile),
-              _valueItem(Icons.favorite_rounded, 'Éthique Humaine', 'Le respect sacré de la vie au cœur de nos actions.', isMobile),
-              _valueItem(Icons.auto_awesome_rounded, 'Innovation', 'Une adaptation constante aux technologies médicales.', isMobile),
+              const _SectionHeader(
+                subtitle: 'DOCUMENTATION VISUELLE',
+                title: 'L\'Institut en Images',
+              ),
+              const SizedBox(height: 50),
+              galleryAsync.when(
+                data: (items) => items.isEmpty
+                    ? const Text("La galerie est vide pour le moment.", style: TextStyle(color: AppColors.textMuted))
+                    : Column(
+                      children: [
+                        Wrap(
+                          spacing: 30,
+                          runSpacing: 30,
+                          alignment: WrapAlignment.center,
+                          children: items.take(isMobile ? 2 : 3).map((item) => _galleryCard(
+                            context,
+                            item.legende,
+                            "${item.date.day}/${item.date.month}/${item.date.year}",
+                            item.imageUrl,
+                            isMobile
+                          )).toList(),
+                        ),
+                        const SizedBox(height: 50),
+                        _buildSeeMoreButton(context, const GalleryPage(), "VOIR TOUTE LA GALERIE"),
+                      ],
+                    ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _valueItem(IconData icon, String title, String desc, bool isMobile) {
+  Widget _galleryCard(BuildContext context, String title, String date, String image, bool isMobile) {
+    final double width = isMobile ? double.infinity : 480;
+
     return PremiumFadeIn(
-      child: Container(
-        width: isMobile ? double.infinity : 350,
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(20),
+      child: _HoverCard(
+        child: Container(
+          width: width,
+          constraints: const BoxConstraints(maxWidth: 520),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withOpacity(0.08),
+                blurRadius: 40,
+                offset: const Offset(0, 15),
               ),
-              child: Icon(icon, color: AppColors.accentYellow, size: isMobile ? 35 : 50),
-            ),
-            const SizedBox(height: 25),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white, 
-                fontWeight: FontWeight.w900, 
-                fontSize: isMobile ? 20 : 26,
-                fontFamily: 'Playfair Display'
+            ],
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: Stack(
+                  children: [
+                    image.startsWith('http') 
+                      ? Image.network(image, height: isMobile ? 210 : 300, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile))
+                      : Image.asset(image, height: isMobile ? 210 : 300, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile)),
+                    Positioned(
+                      top: 18,
+                      left: 18,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)],
+                        ),
+                        child: Text(
+                          date,
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              desc,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white70, 
-                fontSize: isMobile ? 14 : 16, 
-                height: 1.6,
-                fontWeight: FontWeight.w500
+              Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title, 
+                      maxLines: 2, 
+                      overflow: TextOverflow.ellipsis, 
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900, 
+                        fontSize: isMobile ? 18 : 22, 
+                        color: AppColors.textMain,
+                        fontFamily: 'Playfair Display',
+                        height: 1.25
+                      )
+                    ),
+                    const SizedBox(height: 20),
+                    TextButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryPage())),
+                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'VOIR L\'IMAGE', 
+                            style: TextStyle(
+                              color: AppColors.primaryBlue, 
+                              fontWeight: FontWeight.w900, 
+                              fontSize: 11,
+                              letterSpacing: 1.5
+                            )
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primaryBlue),
+                        ],
+                      )
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder(bool isMobile) {
+    return Container(
+      height: isMobile ? 210 : 300,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: AppColors.deepGradient,
+      ),
+      child: const Center(
+        child: Icon(Icons.photo_library_rounded, color: Colors.white38, size: 56),
       ),
     );
   }
@@ -866,36 +981,41 @@ class _DepartmentsSection extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 80 : 120, horizontal: 20),
-      color: Colors.white,
-      child: Column(
-        children: [
-          _SectionHeader(
-            subtitle: 'NOS FILIÈRES',
-            title: 'Programmes de Haut Niveau',
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      color: const Color(0xFFF8FAFC), // Soft off-white surface
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            children: [
+              const _SectionHeader(
+                subtitle: 'NOS FILIÈRES D\'EXCELLENCE',
+                title: 'Programmes de Haut Niveau',
+              ),
+              const SizedBox(height: 60),
+              facultiesAsync.when(
+                data: (faculties) {
+                  if (faculties.isEmpty) {
+                    return const Text("Aucun domaine de formation enregistré pour le moment.", style: TextStyle(color: AppColors.textMuted));
+                  }
+                  return Wrap(
+                    spacing: 30,
+                    runSpacing: 30,
+                    alignment: WrapAlignment.center,
+                    children: faculties.map((f) => _deptCard(
+                      Icons.school_rounded, 
+                      f.nomFaculte, 
+                      "Formation d'élite en ${f.nomFaculte} avec un encadrement académique rigoureux.",
+                      isMobile
+                    )).toList(),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              ),
+            ],
           ),
-          const SizedBox(height: 70),
-          facultiesAsync.when(
-            data: (faculties) {
-              if (faculties.isEmpty) {
-                return const Text("Aucun domaine de formation enregistré pour le moment.");
-              }
-              return Wrap(
-                spacing: 30,
-                runSpacing: 30,
-                alignment: WrapAlignment.center,
-                children: faculties.map((f) => _deptCard(
-                  Icons.school_rounded, 
-                  f.nomFaculte, 
-                  "Formation d'élite en ${f.nomFaculte} avec un encadrement académique rigoureux.",
-                  isMobile
-                )).toList(),
-              );
-            },
-            loading: () => Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text("Erreur : $e"),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -904,56 +1024,300 @@ class _DepartmentsSection extends ConsumerWidget {
     return PremiumFadeIn(
       child: _HoverCard(
         child: Container(
-          width: isMobile ? double.infinity : 350,
-          constraints: const BoxConstraints(maxWidth: 450),
-          padding: const EdgeInsets.all(40),
+          width: isMobile ? double.infinity : 380,
+          constraints: const BoxConstraints(minHeight: 290, maxWidth: 420),
+          padding: const EdgeInsets.all(35),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withOpacity(0.04),
-                blurRadius: 50,
-                offset: const Offset(0, 20),
+                color: const Color(0xFF0F172A).withOpacity(0.05),
+                blurRadius: 40,
+                offset: const Offset(0, 15),
               ),
             ],
-            border: Border.all(color: const Color(0xFFF1F5F9)),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(icon, color: AppColors.primaryBlue, size: 30),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(icon, color: AppColors.primaryBlue, size: 28),
+                  ),
+                  const SizedBox(height: 22),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900, 
+                      fontSize: 20, 
+                      color: AppColors.textMain,
+                      fontFamily: 'Playfair Display'
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      color: AppColors.textMuted, 
+                      fontSize: 14, 
+                      height: 1.6,
+                      fontWeight: FontWeight.w500
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 30),
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.w900, 
-                  fontSize: 22, 
-                  color: AppColors.textMain,
-                  fontFamily: 'Playfair Display'
-                ),
+              const Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Icon(Icons.arrow_right_alt_rounded, color: AppColors.primaryBlue, size: 28),
               ),
-              const SizedBox(height: 15),
-              Text(
-                desc,
-                style: TextStyle(
-                  color: AppColors.textMuted, 
-                  fontSize: 14, 
-                  height: 1.6,
-                  fontWeight: FontWeight.w500
-                ),
-              ),
-              const SizedBox(height: 25),
-              const Icon(Icons.arrow_right_alt_rounded, color: AppColors.primaryBlue),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CommitteeSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final committeeAsync = ref.watch(committeeStreamProvider);
+    final isMobile = Responsive.isMobile(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      color: Colors.white,
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            children: [
+              const _SectionHeader(
+                subtitle: 'COMITÉ DE GESTION (COGE)',
+                title: 'Les Garants de l\'Excellence',
+              ),
+              const SizedBox(height: 60),
+              committeeAsync.when(
+                data: (members) {
+                  if (members.isEmpty) return const Text("Information bientôt disponible.", style: TextStyle(color: AppColors.textMuted));
+                  final visibleMembers = members.take(3).toList();
+                  return Column(
+                    children: [
+                      Wrap(
+                        spacing: 40,
+                        runSpacing: 40,
+                        alignment: WrapAlignment.center,
+                        children: visibleMembers.map((m) => _memberCard(
+                          context,
+                          m.fonction, 
+                          m.nomComplet, 
+                          m.photoMembre,
+                          isMobile
+                        )).toList(),
+                      ),
+                      const SizedBox(height: 50),
+                      _buildSeeMoreButton(context, const CommitteePage(), "VOIR TOUT LE COMITÉ"),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _memberCard(BuildContext context, String role, String name, String image, bool isMobile) {
+    return PremiumFadeIn(
+      child: _HoverCard(
+        child: Container(
+          width: isMobile ? double.infinity : 320,
+          constraints: const BoxConstraints(maxWidth: 360),
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withOpacity(0.04),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.white, 
+                  shape: BoxShape.circle, 
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0F172A).withOpacity(0.08), 
+                      blurRadius: 25,
+                      offset: const Offset(0, 8),
+                    )
+                  ]
+                ),
+                child: CircleAvatar(
+                  radius: isMobile ? 55 : 75,
+                  backgroundColor: Colors.white,
+                  backgroundImage: (image.isNotEmpty && image.startsWith('http')) 
+                      ? NetworkImage(image) 
+                      : const AssetImage('assets/images/logo.jpg') as ImageProvider,
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                name.toUpperCase(),
+                style: TextStyle(
+                  fontWeight: FontWeight.w900, 
+                  fontSize: isMobile ? 15 : 17, 
+                  color: AppColors.textMain, 
+                  fontFamily: 'Playfair Display',
+                  letterSpacing: 0.5
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  role.toUpperCase(),
+                  style: TextStyle(
+                    color: AppColors.primaryBlue, 
+                    fontSize: isMobile ? 9 : 11, 
+                    fontWeight: FontWeight.w900, 
+                    letterSpacing: 1.5
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 18),
+              TextButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommitteePage())),
+                child: const Text(
+                  'VOIR FICHE',
+                  style: TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 10,
+                    letterSpacing: 1.5
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ValuesSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      decoration: const BoxDecoration(
+        color: AppColors.deepNavy,
+        image: DecorationImage(
+          image: AssetImage('assets/images/slider3.jpg'),
+          fit: BoxFit.cover,
+          opacity: 0.05,
+        ),
+      ),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            children: [
+              const _SectionHeader(
+                subtitle: 'NOTRE ADN INSTITUTIONNEL',
+                title: 'Des Valeurs d\'Excellence',
+                isDark: true,
+              ),
+              const SizedBox(height: 60),
+              Wrap(
+                spacing: 40,
+                runSpacing: 40,
+                alignment: WrapAlignment.center,
+                children: [
+                  _valueItem(Icons.verified_user_rounded, 'Rigueur Scientifique', 'Une formation médicale exigeante et de pointe basée sur le système LMD.', isMobile),
+                  _valueItem(Icons.favorite_rounded, 'Éthique Humaine', 'Le respect sacré de la vie au cœur de toutes nos actions pédagogiques.', isMobile),
+                  _valueItem(Icons.auto_awesome_rounded, 'Innovation', 'Une adaptation constante aux technologies médicales et de la santé.', isMobile),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _valueItem(IconData icon, String title, String desc, bool isMobile) {
+    return PremiumFadeIn(
+      child: Container(
+        width: isMobile ? double.infinity : 350,
+        constraints: const BoxConstraints(maxWidth: 380),
+        padding: const EdgeInsets.all(25),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.12)),
+              ),
+              child: Icon(icon, color: AppColors.accentYellow, size: isMobile ? 32 : 44),
+            ),
+            const SizedBox(height: 22),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white, 
+                fontWeight: FontWeight.w900, 
+                fontSize: isMobile ? 20 : 24,
+                fontFamily: 'Playfair Display'
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              desc,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white70, 
+                fontSize: isMobile ? 13 : 15, 
+                height: 1.6,
+                fontWeight: FontWeight.w500
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -977,290 +1341,9 @@ class _HoverCardState extends State<_HoverCard> {
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
       child: AnimatedScale(
-        scale: isHovered ? 1.03 : 1.0,
+        scale: isHovered ? 1.025 : 1.0,
         duration: const Duration(milliseconds: 200),
         child: widget.child,
-      ),
-    );
-  }
-}
-
-class _NewsSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final newsAsync = ref.watch(newsStreamProvider);
-    final isMobile = Responsive.isMobile(context);
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 80 : 120, horizontal: 20),
-      color: Colors.white,
-      child: Column(
-        children: [
-          _SectionHeader(
-            subtitle: 'ACTUALITÉS',
-            title: 'Les Dernières de l\'Institut',
-            isDark: false,
-          ),
-          newsAsync.when(
-            data: (articles) {
-              if (articles.isEmpty) return const Text("Aucune actualité pour le moment.");
-              final visibleArticles = articles.take(2).toList();
-              return Column(
-                children: [
-                  Wrap(
-                    spacing: 30,
-                    runSpacing: 30,
-                    alignment: WrapAlignment.center,
-                    children: visibleArticles
-                        .map((article) => _newsItem(context, article.title, "${article.date.day}/${article.date.month}/${article.date.year}", article.imageUrl, isMobile))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 50),
-                  _buildSeeMoreButton(context, NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
-                ],
-              );
-            },
-            loading: () => CircularProgressIndicator(),
-            error: (e, _) => Text("Erreur : $e"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _newsItem(BuildContext context, String title, String date, String image, bool isMobile) {
-    return PremiumFadeIn(
-      child: Container(
-        width: isMobile ? 300 : 380,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withOpacity(0.06),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              child: Stack(
-                children: [
-                  image.startsWith('http') 
-                    ? Image.network(image, height: isMobile ? 180 : 240, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: isMobile ? 180 : 240, color: Colors.grey))
-                    : Image.asset(image, height: isMobile ? 180 : 240, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: isMobile ? 180 : 240, color: Colors.grey)),
-                  Positioned(
-                    top: 20,
-                    left: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBlue,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        date,
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title, 
-                    maxLines: 2, 
-                    overflow: TextOverflow.ellipsis, 
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900, 
-                      fontSize: isMobile ? 18 : 22, 
-                      color: AppColors.textMain,
-                      fontFamily: 'Playfair Display',
-                      height: 1.2
-                    )
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage())),
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'LIRE LA SUITE', 
-                          style: TextStyle(
-                            color: AppColors.primaryBlue, 
-                            fontWeight: FontWeight.w900, 
-                            fontSize: 11,
-                            letterSpacing: 1.5
-                          )
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primaryBlue),
-                      ],
-                    )
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GalleryPreviewSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final galleryAsync = ref.watch(galleryStreamProvider);
-    final size = MediaQuery.of(context).size;
-    final isMobile = Responsive.isMobile(context);
-    final isTablet = Responsive.isTablet(context);
-
-    double imgWidth = 300;
-    if (isMobile) {
-      imgWidth = size.width * 0.43;
-    } else if (isTablet) {
-      imgWidth = (size.width - 100) / 3;
-    }
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 80 : 120, horizontal: 20),
-      color: Colors.white,
-      child: Column(
-        children: [
-          _SectionHeader(
-            subtitle: 'GALERIE',
-            title: 'L\'Institut en Images',
-          ),
-          const SizedBox(height: 70),
-          galleryAsync.when(
-            data: (items) => items.isEmpty
-                ? const Text("La galerie est vide.")
-                : Column(
-                  children: [
-                    Wrap(
-                      spacing: 20,
-                      runSpacing: 20,
-                      alignment: WrapAlignment.center,
-                      children: items.take(2).map((item) => _galleryCard(
-                        context,
-                        item.legende,
-                        "${item.date.day}/${item.date.month}/${item.date.year}",
-                        item.imageUrl,
-                        isMobile
-                      )).toList(),
-                    ),
-                    const SizedBox(height: 50),
-                    _buildSeeMoreButton(context, GalleryPage(), "VOIR TOUTE LA GALERIE"),
-                  ],
-                ),
-            loading: () => CircularProgressIndicator(),
-            error: (e, _) => Text("Erreur : $e"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _galleryCard(BuildContext context, String title, String date, String image, bool isMobile) {
-    return PremiumFadeIn(
-      child: Container(
-        width: isMobile ? 300 : 380,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withOpacity(0.06),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              child: Stack(
-                children: [
-                  image.startsWith('http') 
-                    ? Image.network(image, height: isMobile ? 180 : 240, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: isMobile ? 180 : 240, color: Colors.grey))
-                    : Image.asset(image, height: isMobile ? 180 : 240, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: isMobile ? 180 : 240, color: Colors.grey)),
-                  Positioned(
-                    top: 20,
-                    left: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBlue,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        date,
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title, 
-                    maxLines: 2, 
-                    overflow: TextOverflow.ellipsis, 
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900, 
-                      fontSize: isMobile ? 18 : 22, 
-                      color: AppColors.textMain,
-                      fontFamily: 'Playfair Display',
-                      height: 1.2
-                    )
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryPage())),
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'VOIR PLUS', 
-                          style: TextStyle(
-                            color: AppColors.primaryBlue, 
-                            fontWeight: FontWeight.w900, 
-                            fontSize: 11,
-                            letterSpacing: 1.5
-                          )
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primaryBlue),
-                      ],
-                    )
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1275,28 +1358,31 @@ class _ContactQuickInfo extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 80 : 120, horizontal: 20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
-      child: Column(
-        children: [
-          _SectionHeader(
-            subtitle: 'CONTACT',
-            title: 'À Votre Écoute',
-          ),
-          const SizedBox(height: 70),
-          Wrap(
-            spacing: 30,
-            runSpacing: 30,
-            alignment: WrapAlignment.center,
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      color: const Color(0xFFF1F5F9), // Soft slate
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
             children: [
-              _infoTile(Icons.location_on_rounded, 'Localisation', 'RDC, Ituri, Ville de Mahagi', isMobile),
-              _infoTile(Icons.phone_rounded, 'Ligne Directe', '+243 814 313 997', isMobile),
-              _infoTile(Icons.alternate_email_rounded, 'Email Officiel', 'info@istm-mahagi.edu', isMobile),
+              const _SectionHeader(
+                subtitle: 'NOUS CONTACTER',
+                title: 'À Votre Écoute',
+              ),
+              const SizedBox(height: 60),
+              Wrap(
+                spacing: 30,
+                runSpacing: 30,
+                alignment: WrapAlignment.center,
+                children: [
+                  _infoTile(Icons.location_on_rounded, 'Localisation', 'RDC, Ituri, Ville de Mahagi', isMobile),
+                  _infoTile(Icons.phone_rounded, 'Ligne Directe', '+243 814 313 997', isMobile),
+                  _infoTile(Icons.alternate_email_rounded, 'Email Officiel', 'info@istm-mahagi.edu', isMobile),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1304,29 +1390,37 @@ class _ContactQuickInfo extends StatelessWidget {
   Widget _infoTile(IconData icon, String title, String value, bool isMobile) {
     return PremiumFadeIn(
       child: Container(
-        width: isMobile ? double.infinity : 320,
-        constraints: const BoxConstraints(maxWidth: 400),
-        padding: const EdgeInsets.all(40),
+        width: isMobile ? double.infinity : 350,
+        constraints: const BoxConstraints(maxWidth: 380),
+        padding: const EdgeInsets.all(35),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withOpacity(0.04),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.primaryBlue.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: AppColors.primaryBlue, size: 28),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 22),
             Text(
               title,
               style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.textMain),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               value,
               textAlign: TextAlign.center,
@@ -1358,37 +1452,37 @@ class _SectionHeader extends StatelessWidget {
       children: [
         PremiumFadeIn(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
             decoration: BoxDecoration(
-              color: (isDark ? AppColors.accentYellow : AppColors.primaryBlue).withOpacity(0.1),
+              color: (isDark ? AppColors.accentYellow : AppColors.primaryBlue).withOpacity(0.12),
               borderRadius: BorderRadius.circular(50),
             ),
             child: Text(
               subtitle.toUpperCase(),
               style: TextStyle(
-                fontSize: isMobile ? 10 : 12,
-                letterSpacing: 3,
+                fontSize: isMobile ? 10 : 11,
+                letterSpacing: 2.5,
                 fontWeight: FontWeight.w900,
                 color: isDark ? AppColors.accentYellow : AppColors.primaryBlue,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         PremiumFadeIn(
           child: Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: isMobile ? 28 : 42,
+              fontSize: isMobile ? 26 : 38,
               fontWeight: FontWeight.w900,
               color: isDark ? Colors.white : AppColors.textMain,
               fontFamily: 'Playfair Display',
-              height: 1.1,
+              height: 1.15,
             ),
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 14),
         PremiumFadeIn(
           child: Container(
             width: 60,
@@ -1406,15 +1500,17 @@ class _SectionHeader extends StatelessWidget {
 
 Widget _buildSeeMoreButton(BuildContext context, Widget target, String label) {
   return PremiumFadeIn(
-    child: OutlinedButton.icon(
+    child: ElevatedButton.icon(
       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => target)),
       icon: const Icon(Icons.add_rounded, size: 18),
-      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 10)),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primaryBlue,
-        side: const BorderSide(color: AppColors.primaryBlue, width: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 11)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: Colors.white,
+        elevation: 8,
+        shadowColor: AppColors.primaryBlue.withOpacity(0.3),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     ),
   );
