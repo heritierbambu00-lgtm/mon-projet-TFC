@@ -59,7 +59,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         children: [
           CustomScrollView(
             slivers: [
-              // Top Information Bar (Modèle UAC)
+              // Top Information Bar
               SliverToBoxAdapter(
                 child: Column(
                   children: [
@@ -77,9 +77,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           if (!Responsive.isMobile(context))
                             Row(
                               children: [
-                                _headerTopLink('Alumni', 'https://alumni.uaconline.edu.cd/public/'),
-                                const Text(' | ', style: TextStyle(color: Colors.white38)),
-                                _headerTopLink('Mail Pro', 'https://webmail.extrahoster.com/'),
+                                _headerTopLink('Alumni', () => _navigateTo(const NewsPage())),
                                 const Text(' | ', style: TextStyle(color: Colors.white38)),
                                 _headerTopLink('Portail Étudiant', () => _openLogin('Étudiant')),
                                 const Text(' | ', style: TextStyle(color: Colors.white38)),
@@ -106,8 +104,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                             const Text('|', style: TextStyle(color: Colors.white70)),
                             TextButton(
-                              onPressed: () {},
-                              child: const Text('✨ Revue Étincelle', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              onPressed: () => _navigateTo(const ELearningPage()),
+                              child: const Text('✨ E-Learning', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -163,7 +161,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                       children: [
                         _navItem('ACCUEIL', onTap: () {}),
                         _navDropdown('À PROPOS', {
-                          'Alumni': const NewsPage(),
                           'Galerie photos': const GalleryPage(),
                           'Personnel': const CommitteePage(),
                           'Calendrier': const CalendarPage(),
@@ -173,21 +170,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           'Statuts': const StatutesPage(),
                         }),
                         _navItem('HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
-                        _navDropdown('DOMAINE', {
-                          'Sciences de l\'Homme et de la Société': const ELearningPage(),
-                          'Sciences Economiques et de Gestion': const ELearningPage(),
-                          'Sciences Agronomiques et Environnement': const ELearningPage(),
-                          'Sciences et Technologie': const ELearningPage(),
-                          'Sciences Psychologiques de l\'Education': const ELearningPage(),
-                        }),
-                        _navDropdown('E-LEARNING', {
-                          'Portail Enseignant': const ELearningPage(),
-                          'Portail Etudiant': const ELearningPage(),
-                        }),
-                        _navDropdown('INTRANET', {
-                          'Décanat': const ELearningPage(),
-                          'Staff': const ELearningPage(),
-                        }),
+                        _navItem('E-LEARNING', onTap: () => _navigateTo(const ELearningPage())),
                         _navItem('CONTACT', onTap: () => _navigateTo(const ContactPage())),
                       ],
                     ),
@@ -197,11 +180,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   const SizedBox(width: 5),
                   _portalButton(),
-                  const SizedBox(width: 5),
-                  IconButton(
-                    icon: const Icon(Icons.menu_rounded, color: AppColors.primaryBlue, size: 30),
-                    onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-                  ),
+                  // Pas de menu burger sur écran d'ordinateur (desktop)
+                  if (!Responsive.isDesktop(context)) ...[
+                    const SizedBox(width: 5),
+                    IconButton(
+                      icon: const Icon(Icons.menu_rounded, color: AppColors.primaryBlue, size: 30),
+                      onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                    ),
+                  ],
                   const SizedBox(width: 10),
                 ],
               ),
@@ -245,27 +231,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // Quick Action Buttons Bar (4 Buttons like Reference Site)
+              // Quick Action Buttons Bar (4 Boutons)
               SliverToBoxAdapter(
                 child: _QuickButtonsBar(),
               ),
 
-              // Annonce Section (Modèle UAC - Fond sombre)
-              SliverToBoxAdapter(
-                child: _AnnouncementSection(),
-              ),
-
-              // Nouvelles Récentes Section (Dynamique Firestore avec Fallbacks)
+              // Nouvelles Récentes Section (100% Dynamique Firestore)
               SliverToBoxAdapter(
                 child: _NewsSection(),
               ),
 
-              // Gallery Strip Section (Défilé Photos Dynamique)
+              // Gallery Strip Section (100% Dynamique Firestore)
               SliverToBoxAdapter(
                 child: _GalleryBannerStrip(),
               ),
 
-              // Stats Section (L'Institut en Chiffres)
+              // Stats Section (L'Institut en Chiffres - Dynamique)
               SliverToBoxAdapter(
                 child: Consumer(
                   builder: (context, ref, child) {
@@ -295,10 +276,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   runSpacing: 25,
                                   alignment: WrapAlignment.center,
                                   children: [
-                                    _buildStatCard(Icons.history_toggle_off, stats['annees']!, 'Années d\'expérience', context),
-                                    _buildStatCard(Icons.school_outlined, stats['etudiants']!, 'Étudiants formés', context),
-                                    _buildStatCard(Icons.account_tree_outlined, stats['departements']!, 'Départements actifs', context),
-                                    _buildStatCard(Icons.verified_user_outlined, stats['homologation']!, 'Diplômes homologués', context),
+                                    _buildStatCard(Icons.history_toggle_off, stats['annees'] ?? '...', 'Années d\'expérience', context),
+                                    _buildStatCard(Icons.school_outlined, stats['etudiants'] ?? '...', 'Étudiants formés', context),
+                                    _buildStatCard(Icons.account_tree_outlined, stats['departements'] ?? '...', 'Départements actifs', context),
+                                    _buildStatCard(Icons.verified_user_outlined, stats['homologation'] ?? '...', 'Diplômes homologués', context),
                                   ],
                                 ),
                               ],
@@ -313,12 +294,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // Domains / Nos Domaines Section (Dynamique Firestore)
+              // Domains / Nos Domaines Section (100% Dynamique Firestore)
               SliverToBoxAdapter(
                 child: _DomainsSection(),
               ),
 
-              // Committee Section (Membres du COGE Dynamique Firestore)
+              // Committee Section (100% Dynamique Firestore - Masqué si vide)
               SliverToBoxAdapter(
                 child: _CommitteeSection(),
               ),
@@ -652,10 +633,10 @@ class _QuickButtonsBar extends StatelessWidget {
             runSpacing: 15,
             alignment: WrapAlignment.center,
             children: [
-              _quickButton('Alumni', isMobile),
-              _quickButton('CIAQ', isMobile),
-              _quickButton('Bibliothèque numérique', isMobile),
-              _quickButton('Étincelle', isMobile),
+              _quickButton('Alumni', isMobile, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage()))),
+              _quickButton('CIAQ', isMobile, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StatutesPage()))),
+              _quickButton('Bibliothèque numérique', isMobile, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ELearningPage()))),
+              _quickButton('E-Learning', isMobile, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ELearningPage()))),
             ],
           ),
         ),
@@ -663,7 +644,7 @@ class _QuickButtonsBar extends StatelessWidget {
     );
   }
 
-  Widget _quickButton(String title, bool isMobile) {
+  Widget _quickButton(String title, bool isMobile, VoidCallback onTap) {
     return Container(
       width: isMobile ? (150) : 220,
       height: 55,
@@ -673,7 +654,7 @@ class _QuickButtonsBar extends StatelessWidget {
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -693,154 +674,59 @@ class _QuickButtonsBar extends StatelessWidget {
   }
 }
 
-class _AnnouncementSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final isMobile = Responsive.isMobile(context);
-
-    return Container(
-      width: double.infinity,
-      color: const Color(0xFF2D3E50),
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 50 : 80, horizontal: 20),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          child: Column(
-            children: [
-              const Text(
-                'Annonce',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, fontFamily: 'Playfair Display'),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15)],
-                ),
-                child: const Text(
-                  'DÉBUT EFFECTIF DES COURS À L’ISTM MAHAGI',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1),
-                ),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                padding: EdgeInsets.all(isMobile ? 20 : 35),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: Text(
-                  'À l’ensemble de la communauté estudiantine de notre Alma Mater, l’ISTM Mahagi.\n\n'
-                  'Nous vous rappelons que les enseignements débutent effectivement ce lundi 02 novembre 2026 dans toutes les promotions de l’ISTM Mahagi.\n\n'
-                  'Vous êtes invités à consulter le site web et l\'application mobile de l’institution afin de prendre connaissance des horaires des cours et des auditoires attribués à vos promotions respectives.\n\n'
-                  'Nous comptons sur votre présence, votre ponctualité et votre engagement dès le premier jour des enseignements.\n\n'
-                  'Bon début de cours à toutes et à tous !',
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: isMobile ? 13 : 15, height: 1.7, fontWeight: FontWeight.w400),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _NewsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newsAsync = ref.watch(newsStreamProvider);
     final isMobile = Responsive.isMobile(context);
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
-      color: Colors.white,
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1280),
-          child: Column(
-            children: [
-              const _SectionHeader(
-                subtitle: 'ACTUALITÉS ÉTUDIANTES & INSTITUTIONNELLES',
-                title: 'Nouvelles Récentes',
-                isDark: false,
-              ),
-              const SizedBox(height: 50),
-              newsAsync.when(
-                data: (articles) {
-                  final List<Map<String, String>> newsList = [];
-                  if (articles.isNotEmpty) {
-                    for (var a in articles) {
-                      newsList.add({
-                        'title': a.title,
-                        'date': "${a.date.day.toString().padLeft(2, '0')}/${a.date.month.toString().padLeft(2, '0')}",
-                        'time': "${a.date.hour.toString().padLeft(2, '0')}:${a.date.minute.toString().padLeft(2, '0')}",
-                        'location': 'ISTM Mahagi',
-                        'image': a.imageUrl,
-                      });
-                    }
-                  } else {
-                    newsList.addAll([
-                      {
-                        'title': 'ISTM Mahagi : Nomination des membres du personnel technique et ouvrier...',
-                        'date': '02 Nov',
-                        'time': '10:52:15',
-                        'location': 'Cabinet du Recteur',
-                        'image': 'https://uaconline.edu.cd/imagenews/NN18.jpeg',
-                      },
-                      {
-                        'title': 'Rectorat : Affectation des autorités décanales pour l’année académique...',
-                        'date': '02 Nov',
-                        'time': '10:48:50',
-                        'location': 'Cabinet du Recteur',
-                        'image': 'https://uaconline.edu.cd/imagenews/NN14.jpeg',
-                      },
-                      {
-                        'title': 'Encadrements pédagogiques : Des Alumni transmettent le flambeau de l’expérience...',
-                        'date': '02 Nov',
-                        'time': '10:46:39',
-                        'location': 'Cabinet du Recteur',
-                        'image': 'https://uaconline.edu.cd/imagenews/NN11.jpeg',
-                      },
-                    ]);
-                  }
+    return newsAsync.when(
+      data: (articles) {
+        if (articles.isEmpty) return const SizedBox.shrink();
 
-                  return Column(
-                    children: [
-                      Wrap(
-                        spacing: 30,
-                        runSpacing: 30,
-                        alignment: WrapAlignment.center,
-                        children: newsList.take(isMobile ? 1 : 3)
-                            .map((article) => _newsItem(
-                              context, 
-                              article['title']!, 
-                              article['date']!, 
-                              article['time']!, 
-                              article['location']!, 
-                              article['image']!, 
-                              isMobile
-                            ))
-                            .toList(),
-                      ),
-                      const SizedBox(height: 50),
-                      _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
+          color: Colors.white,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1280),
+              child: Column(
+                children: [
+                  const _SectionHeader(
+                    subtitle: 'ACTUALITÉS ÉTUDIANTES & INSTITUTIONNELLES',
+                    title: 'Nouvelles Récentes',
+                    isDark: false,
+                  ),
+                  const SizedBox(height: 50),
+                  Wrap(
+                    spacing: 30,
+                    runSpacing: 30,
+                    alignment: WrapAlignment.center,
+                    children: articles.take(isMobile ? 1 : 3).map((article) {
+                      final dateStr = "${article.date.day.toString().padLeft(2, '0')}/${article.date.month.toString().padLeft(2, '0')}";
+                      final timeStr = "${article.date.hour.toString().padLeft(2, '0')}:${article.date.minute.toString().padLeft(2, '0')}";
+                      return _newsItem(
+                        context, 
+                        article.title, 
+                        dateStr, 
+                        timeStr, 
+                        'ISTM Mahagi', 
+                        article.imageUrl, 
+                        isMobile
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 50),
+                  _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      loading: () => const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -877,23 +763,17 @@ class _NewsSection extends ConsumerWidget {
                           height: isMobile ? 200 : 240, 
                           width: double.infinity, 
                           fit: BoxFit.cover, 
-                          errorBuilder: (_, __, ___) => Container(
-                            height: isMobile ? 200 : 240,
-                            color: const Color(0xFF2D3E50),
-                            child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
-                          )
+                          errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile)
                         )
-                      : Image.asset(
-                          image, 
-                          height: isMobile ? 200 : 240, 
-                          width: double.infinity, 
-                          fit: BoxFit.cover, 
-                          errorBuilder: (_, __, ___) => Container(
-                            height: isMobile ? 200 : 240,
-                            color: const Color(0xFF2D3E50),
-                            child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
-                          )
-                        ),
+                      : (image.isNotEmpty
+                          ? Image.asset(
+                              image, 
+                              height: isMobile ? 200 : 240, 
+                              width: double.infinity, 
+                              fit: BoxFit.cover, 
+                              errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile)
+                            )
+                          : _imagePlaceholder(isMobile)),
                     Positioned(
                       top: 15,
                       left: 15,
@@ -962,6 +842,15 @@ class _NewsSection extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _imagePlaceholder(bool isMobile) {
+    return Container(
+      height: isMobile ? 200 : 240,
+      width: double.infinity,
+      color: const Color(0xFF2D3E50),
+      child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
+    );
+  }
 }
 
 class _GalleryBannerStrip extends ConsumerWidget {
@@ -970,32 +859,23 @@ class _GalleryBannerStrip extends ConsumerWidget {
     final galleryAsync = ref.watch(galleryStreamProvider);
     final isMobile = Responsive.isMobile(context);
 
-    return Container(
-      width: double.infinity,
-      color: const Color(0xFF2D3E50),
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60, horizontal: 20),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1280),
-          child: Column(
-            children: [
-              const Text('GALERIE EN IMAGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 2)),
-              const SizedBox(height: 30),
-              galleryAsync.when(
-                data: (items) {
-                  final List<String> images = items.map((i) => i.imageUrl).where((img) => img.isNotEmpty).toList();
-                  if (images.isEmpty) {
-                    images.addAll([
-                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique9.JPG',
-                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique8.JPG',
-                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique7.JPG',
-                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique6.JPG',
-                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique5.JPG',
-                      'https://uaconline.edu.cd/imagegalerie/rentreeacademique3.JPG',
-                    ]);
-                  }
+    return galleryAsync.when(
+      data: (items) {
+        final List<String> images = items.map((i) => i.imageUrl).where((img) => img.isNotEmpty).toList();
+        if (images.isEmpty) return const SizedBox.shrink();
 
-                  return SingleChildScrollView(
+        return Container(
+          width: double.infinity,
+          color: const Color(0xFF2D3E50),
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60, horizontal: 20),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1280),
+              child: Column(
+                children: [
+                  const Text('GALERIE EN IMAGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 2)),
+                  const SizedBox(height: 30),
+                  SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1020,15 +900,15 @@ class _GalleryBannerStrip extends ConsumerWidget {
                         ),
                       )).toList(),
                     ),
-                  );
-                },
-                loading: () => const CircularProgressIndicator(color: AppColors.accentYellow),
-                error: (_, __) => const SizedBox.shrink(),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
@@ -1039,98 +919,66 @@ class _DomainsSection extends ConsumerWidget {
     final facultiesAsync = ref.watch(homeFacultiesProvider);
     final isMobile = Responsive.isMobile(context);
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
-      color: const Color(0xFFF8FAFC),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1280),
-          child: Column(
-            children: [
-              const _SectionHeader(
-                subtitle: 'ORGANISATION ACADÉMIQUE LMD',
-                title: 'NOS DOMAINES',
-              ),
-              const SizedBox(height: 15),
-              const Text(
-                'L\'ISTM Mahagi organise les domaines principaux d\'enseignement. Dans chaque domaine, il y a les différentes filières de formation d\'élite. Cliquez afin de lire le détail.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 50),
-              facultiesAsync.when(
-                data: (faculties) {
-                  final List<Map<String, String>> domainsList = [];
-                  if (faculties.isNotEmpty) {
-                    for (var f in faculties) {
-                      domainsList.add({
-                        'title': f.nomFaculte,
-                        'email': '${f.nomFaculte.toLowerCase().replaceAll(' ', '')}@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagedomaine/lettres.jpg',
-                      });
-                    }
-                  } else {
-                    domainsList.addAll([
-                      {
-                        'title': 'Sciences de l\'Homme et de la Société',
-                        'email': 'schommeetsociete@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagedomaine/lettres.jpg',
-                      },
-                      {
-                        'title': 'Sciences Economiques et de Gestion',
-                        'email': 'sceconomiquesetgestion@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagedomaine/economie.jpg',
-                      },
-                      {
-                        'title': 'Sciences Agronomiques et Environnement',
-                        'email': 'scdeveloppement@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagedomaine/developpement.jpg',
-                      },
-                      {
-                        'title': 'Sciences et Technologie',
-                        'email': 'scpolytechnique@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagedomaine/polytechnique.jpg',
-                      },
-                      {
-                        'title': 'Sciences Psychologiques de l\'Education',
-                        'email': 'scpsychologiques@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagedomaine/psychologie.jpg',
-                      },
-                    ]);
-                  }
+    return facultiesAsync.when(
+      data: (faculties) {
+        if (faculties.isEmpty) return const SizedBox.shrink();
 
-                  return Wrap(
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
+          color: const Color(0xFFF8FAFC),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1280),
+              child: Column(
+                children: [
+                  const _SectionHeader(
+                    subtitle: 'ORGANISATION ACADÉMIQUE LMD',
+                    title: 'NOS DOMAINES',
+                  ),
+                  const SizedBox(height: 15),
+                  const Text(
+                    'L\'ISTM Mahagi organise les domaines principaux d\'enseignement. Dans chaque domaine, il y a les différentes filières de formation d\'élite. Cliquez afin de lire le détail.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 50),
+                  Wrap(
                     spacing: 30,
                     runSpacing: 30,
                     alignment: WrapAlignment.center,
-                    children: domainsList.map((d) => _domainCard(context, d['title']!, d['email']!, d['image']!, isMobile)).toList(),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+                    children: faculties.map((f) => _domainCard(
+                      context, 
+                      f.nomFaculte, 
+                      'contact@istm-mahagi.edu', 
+                      isMobile
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 50),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D3E50),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15)],
+                    ),
+                    child: const Text(
+                      'Excellence - Rigueur - Santé',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 2),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 50),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D3E50),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15)],
-                ),
-                child: const Text(
-                  'Noverim Me Noverim Te >>>',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 2),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      loading: () => const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
-  Widget _domainCard(BuildContext context, String title, String email, String image, bool isMobile) {
+  Widget _domainCard(BuildContext context, String title, String email, bool isMobile) {
     final double width = isMobile ? double.infinity : 370;
 
     return PremiumFadeIn(
@@ -1153,14 +1001,15 @@ class _DomainsSection extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: Image.network(
-                  image, 
-                  height: 200, 
-                  width: double.infinity, 
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(height: 200, color: const Color(0xFF2D3E50), child: const Icon(Icons.school, color: Colors.white38, size: 48)),
+              Container(
+                height: 180,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF2D3E50),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: const Center(
+                  child: Icon(Icons.school_rounded, color: AppColors.accentYellow, size: 64),
                 ),
               ),
               Padding(
@@ -1185,7 +1034,7 @@ class _DomainsSection extends ConsumerWidget {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('LIRE PLUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                      child: const Text('EN SAVOIR PLUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                     ),
                   ],
                 ),
@@ -1204,94 +1053,45 @@ class _CommitteeSection extends ConsumerWidget {
     final committeeAsync = ref.watch(committeeStreamProvider);
     final isMobile = Responsive.isMobile(context);
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
-      color: Colors.white,
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1280),
-          child: Column(
-            children: [
-              const _SectionHeader(
-                subtitle: 'AUTORITÉS INSTITUTIONNELLES',
-                title: 'Membres du COGE',
-              ),
-              const SizedBox(height: 50),
-              committeeAsync.when(
-                data: (members) {
-                  final List<Map<String, String>> cogeMembers = [];
-                  if (members.isNotEmpty) {
-                    for (var m in members) {
-                      cogeMembers.add({
-                        'name': m.nomComplet,
-                        'title': m.categorie,
-                        'role': m.fonction,
-                        'email': 'contact@istm-mahagi.edu',
-                        'image': m.photoMembre,
-                      });
-                    }
-                  } else {
-                    cogeMembers.addAll([
-                      {
-                        'name': 'Dr. KAVULA MAWAZO Sikirivwa, PhD',
-                        'title': 'Professeur Associé',
-                        'role': 'Recteur',
-                        'email': 'rectorat@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagecoge/mawazo.jpg',
-                      },
-                      {
-                        'name': 'Dr. KANYORORO KISALI Jean-Chrysostome, PhD',
-                        'title': 'Professeur',
-                        'role': 'Secrétaire Général Académique',
-                        'email': 'academique@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagecoge/kanyororo.jpg',
-                      },
-                      {
-                        'name': 'Dr. KASEREKA KIBANDA Wilfrid, PhD',
-                        'title': 'Professeur',
-                        'role': 'Secrétaire Général de Recherche',
-                        'email': 'recherche@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagecoge/kibanda.jpg',
-                      },
-                      {
-                        'name': 'Dr. PALUKU KAMILI Jean-Paul, PhD',
-                        'title': 'Professeur Associé',
-                        'role': 'Secrétaire Général Administratif',
-                        'email': 'administratif@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagecoge/kamili.jpg',
-                      },
-                      {
-                        'name': 'Ir. KATEMBO KASOLENE Moïse',
-                        'title': 'Assistant Deux',
-                        'role': 'Administrateur de Budget',
-                        'email': 'budget@istm-mahagi.edu',
-                        'image': 'https://uaconline.edu.cd/imagecoge/kasolene.jpg',
-                      },
-                    ]);
-                  }
+    return committeeAsync.when(
+      data: (members) {
+        if (members.isEmpty) return const SizedBox.shrink();
 
-                  return Wrap(
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
+          color: Colors.white,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1280),
+              child: Column(
+                children: [
+                  const _SectionHeader(
+                    subtitle: 'AUTORITÉS INSTITUTIONNELLES',
+                    title: 'Membres du COGE',
+                  ),
+                  const SizedBox(height: 50),
+                  Wrap(
                     spacing: 25,
                     runSpacing: 25,
                     alignment: WrapAlignment.center,
-                    children: cogeMembers.map((m) => _memberCard(
-                      m['name']!, 
-                      m['title']!, 
-                      m['role']!, 
-                      m['email']!, 
-                      m['image']!, 
+                    children: members.map((m) => _memberCard(
+                      m.nomComplet, 
+                      m.categorie, 
+                      m.fonction, 
+                      'contact@istm-mahagi.edu', 
+                      m.photoMembre, 
                       isMobile
                     )).toList(),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -1318,13 +1118,23 @@ class _CommitteeSection extends ConsumerWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: Image.network(
-                  image, 
-                  height: 180, 
-                  width: double.infinity, 
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(height: 180, color: const Color(0xFF2D3E50), child: const Icon(Icons.person, color: Colors.white38, size: 48)),
-                ),
+                child: image.startsWith('http')
+                  ? Image.network(
+                      image, 
+                      height: 180, 
+                      width: double.infinity, 
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _avatarPlaceholder(),
+                    )
+                  : (image.isNotEmpty
+                      ? Image.asset(
+                          image,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _avatarPlaceholder(),
+                        )
+                      : _avatarPlaceholder()),
               ),
               const SizedBox(height: 18),
               Text(
@@ -1361,6 +1171,15 @@ class _CommitteeSection extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _avatarPlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: const Color(0xFF2D3E50),
+      child: const Center(child: Icon(Icons.person_rounded, color: Colors.white38, size: 56)),
     );
   }
 }
