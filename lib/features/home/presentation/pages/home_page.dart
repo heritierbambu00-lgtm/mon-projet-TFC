@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -82,7 +83,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
                             child: Row(
                               children: [
-                                _topBarPortailDropdown(),
+                                _HoverTopBarPortail(onSelectRole: _openLogin),
                                 const Text('  |  ', style: TextStyle(color: Colors.white70)),
                                 _topBarIconLink(Icons.menu_book_rounded, 'Bibliothèque', () => _navigateTo(const ELearningPage())),
                                 const Text('  |  ', style: TextStyle(color: Colors.white70)),
@@ -96,7 +97,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // Main Navigation Header
+              // Main Navigation Header (Navbar identique avec survol automatique)
               SliverAppBar(
                 expandedHeight: 0,
                 floating: true,
@@ -140,33 +141,53 @@ class _HomePageState extends ConsumerState<HomePage> {
                   if (Responsive.isDesktop(context))
                     Row(
                       children: [
-                        _navIconItem(Icons.home_rounded, 'ACCUEIL', onTap: () {}),
-                        _navIconDropdown(Icons.inbox_rounded, 'À PROPOS', {
-                          'Galerie photos': const GalleryPage(),
-                          'Personnel': const CommitteePage(),
-                          'Calendrier': const CalendarPage(),
-                          'Hymne': const AnthemPage(),
-                          'Historique': const HistoryPage(),
-                          'Mission et Vision': const MissionVisionPage(),
-                          'Statuts': const StatutesPage(),
-                        }),
-                        _navIconItem(Icons.access_time_rounded, 'HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
-                        _navIconDropdown(Icons.school_rounded, 'DOMAINE', {
-                          'Sciences de l\'Homme et de la Société': const ELearningPage(),
-                          'Sciences Economiques et de Gestion': const ELearningPage(),
-                          'Sciences Agronomiques et Environnement': const ELearningPage(),
-                          'Sciences et Technologie': const ELearningPage(),
-                          'Sciences Psychologiques de l\'Education': const ELearningPage(),
-                        }),
-                        _navIconDropdown(Icons.laptop_chromebook_rounded, 'E-LEARNING', {
-                          'Portail Enseignant': const ELearningPage(),
-                          'Portail Etudiant': const ELearningPage(),
-                        }),
-                        _navIconDropdown(Icons.vpn_key_rounded, 'INTRANET', {
-                          'Décanat': const ELearningPage(),
-                          'Staff': const ELearningPage(),
-                        }),
-                        _navIconItem(Icons.email_rounded, 'CONTACT', onTap: () => _navigateTo(const ContactPage())),
+                        _HoverNavItem(icon: Icons.home_rounded, title: 'ACCUEIL', onTap: () {}),
+                        _HoverNavDropdown(
+                          icon: Icons.inbox_rounded,
+                          title: 'À PROPOS',
+                          items: {
+                            'Galerie photos': const GalleryPage(),
+                            'Personnel': const CommitteePage(),
+                            'Calendrier': const CalendarPage(),
+                            'Hymne': const AnthemPage(),
+                            'Historique': const HistoryPage(),
+                            'Mission et Vision': const MissionVisionPage(),
+                            'Statuts': const StatutesPage(),
+                          },
+                          onSelect: _navigateTo,
+                        ),
+                        _HoverNavItem(icon: Icons.access_time_rounded, title: 'HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
+                        _HoverNavDropdown(
+                          icon: Icons.school_rounded,
+                          title: 'DOMAINE',
+                          items: {
+                            'Sciences de l\'Homme et de la Société': const ELearningPage(),
+                            'Sciences Economiques et de Gestion': const ELearningPage(),
+                            'Sciences Agronomiques et Environnement': const ELearningPage(),
+                            'Sciences et Technologie': const ELearningPage(),
+                            'Sciences Psychologiques de l\'Education': const ELearningPage(),
+                          },
+                          onSelect: _navigateTo,
+                        ),
+                        _HoverNavDropdown(
+                          icon: Icons.laptop_chromebook_rounded,
+                          title: 'E-LEARNING',
+                          items: {
+                            'Portail Enseignant': const ELearningPage(),
+                            'Portail Etudiant': const ELearningPage(),
+                          },
+                          onSelect: _navigateTo,
+                        ),
+                        _HoverNavDropdown(
+                          icon: Icons.vpn_key_rounded,
+                          title: 'INTRANET',
+                          items: {
+                            'Décanat': const ELearningPage(),
+                            'Staff': const ELearningPage(),
+                          },
+                          onSelect: _navigateTo,
+                        ),
+                        _HoverNavItem(icon: Icons.email_rounded, title: 'CONTACT', onTap: () => _navigateTo(const ContactPage())),
                         
                         // Bouton de recherche bleu carré comme sur la capture
                         Container(
@@ -336,38 +357,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _topBarPortailDropdown() {
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 35),
-      elevation: 20,
-      shadowColor: Colors.black.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.person_rounded, color: Colors.white, size: 14),
-          SizedBox(width: 5),
-          Text(
-            'Portail',
-            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-          Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 14),
-        ],
-      ),
-      onSelected: _openLogin,
-      itemBuilder: (context) => [
-        'Étudiant',
-        'Enseignant',
-        'Staff',
-        'Décanat',
-        'Comptable',
-      ].map((role) => PopupMenuItem<String>(
-        value: role,
-        child: Text(role, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-      )).toList(),
-    );
-  }
-
   Widget _topBarIconLink(IconData icon, String title, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
@@ -448,58 +437,6 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _navIconItem(IconData icon, String title, {VoidCallback? onTap}) {
-    return TextButton.icon(
-      onPressed: onTap ?? () {},
-      icon: Icon(icon, size: 14, color: const Color(0xFF2D3E50)),
-      label: Text(
-        title,
-        style: const TextStyle(
-          color: AppColors.textMain,
-          fontWeight: FontWeight.w700,
-          fontSize: 11,
-          letterSpacing: 0.5
-        ),
-      ),
-    );
-  }
-
-  Widget _navIconDropdown(IconData icon, String title, Map<String, Widget> items) {
-    return PopupMenuButton<Widget>(
-      offset: const Offset(0, 45),
-      elevation: 20,
-      shadowColor: Colors.black.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: const Color(0xFF2D3E50)),
-            const SizedBox(width: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                color: AppColors.textMain,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-                letterSpacing: 0.5,
-              ),
-            ),
-            const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: AppColors.textMuted),
-          ],
-        ),
-      ),
-      onSelected: (page) => _navigateTo(page),
-      itemBuilder: (context) => items.entries.map((entry) {
-        return PopupMenuItem<Widget>(
-          value: entry.value,
-          child: Text(entry.key, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-        );
-      }).toList(),
     );
   }
 
@@ -609,6 +546,365 @@ class _HomePageState extends ConsumerState<HomePage> {
             onTap();
           }
         },
+      ),
+    );
+  }
+}
+
+// Widget pour les éléments de la navigation principale avec effet de survol (Hover) & soulignement bleu (Image 3)
+class _HoverNavDropdown extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final Map<String, Widget> items;
+  final Function(Widget) onSelect;
+
+  const _HoverNavDropdown({
+    required this.icon,
+    required this.title,
+    required this.items,
+    required this.onSelect,
+  });
+
+  @override
+  State<_HoverNavDropdown> createState() => _HoverNavDropdownState();
+}
+
+class _HoverNavDropdownState extends State<_HoverNavDropdown> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isHovered = false;
+  Timer? _closeTimer;
+
+  void _showOverlay() {
+    _closeTimer?.cancel();
+    if (_overlayEntry != null) return;
+
+    setState(() => _isHovered = true);
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: 240,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 36),
+          child: MouseRegion(
+            onEnter: (_) => _cancelCloseTimer(),
+            onExit: (_) => _scheduleClose(),
+            child: Material(
+              elevation: 12,
+              borderRadius: BorderRadius.circular(4),
+              color: Colors.white,
+              shadowColor: Colors.black.withOpacity(0.2),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widget.items.entries.map((entry) {
+                    return _HoverSubMenuItem(
+                      title: entry.key,
+                      onTap: () {
+                        _removeOverlay();
+                        widget.onSelect(entry.value);
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _scheduleClose() {
+    _closeTimer?.cancel();
+    _closeTimer = Timer(const Duration(milliseconds: 150), () {
+      _removeOverlay();
+    });
+  }
+
+  void _cancelCloseTimer() {
+    _closeTimer?.cancel();
+  }
+
+  void _removeOverlay() {
+    _closeTimer?.cancel();
+    if (_overlayEntry != null) {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+      if (mounted) setState(() => _isHovered = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _closeTimer?.cancel();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: MouseRegion(
+        onEnter: (_) => _showOverlay(),
+        onExit: (_) => _scheduleClose(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.icon, size: 14, color: _isHovered ? AppColors.primaryBlue : const Color(0xFF2D3E50)),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.title,
+                    style: TextStyle(
+                      color: _isHovered ? AppColors.primaryBlue : AppColors.textMain,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: _isHovered ? AppColors.primaryBlue : AppColors.textMuted),
+                ],
+              ),
+              const SizedBox(height: 4),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                height: 2,
+                width: _isHovered ? 35 : 0,
+                color: AppColors.primaryBlue,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HoverNavItem extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _HoverNavItem({required this.icon, required this.title, required this.onTap});
+
+  @override
+  State<_HoverNavItem> createState() => _HoverNavItemState();
+}
+
+class _HoverNavItemState extends State<_HoverNavItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: InkWell(
+        onTap: widget.onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.icon, size: 14, color: _isHovered ? AppColors.primaryBlue : const Color(0xFF2D3E50)),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.title,
+                    style: TextStyle(
+                      color: _isHovered ? AppColors.primaryBlue : AppColors.textMain,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                height: 2,
+                width: _isHovered ? 35 : 0,
+                color: AppColors.primaryBlue,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HoverSubMenuItem extends StatefulWidget {
+  final String title;
+  final VoidCallback onTap;
+
+  const _HoverSubMenuItem({required this.title, required this.onTap});
+
+  @override
+  State<_HoverSubMenuItem> createState() => _HoverSubMenuItemState();
+}
+
+class _HoverSubMenuItemState extends State<_HoverSubMenuItem> {
+  bool _isItemHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isItemHovered = true),
+      onExit: (_) => setState(() => _isItemHovered = false),
+      child: InkWell(
+        onTap: widget.onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          color: _isItemHovered ? const Color(0xFFF1F5F9) : Colors.transparent,
+          child: Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: _isItemHovered ? FontWeight.bold : FontWeight.w500,
+              color: _isItemHovered ? AppColors.primaryBlue : const Color(0xFF334155),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Menu Portail avec déclenchement au survol (Hover)
+class _HoverTopBarPortail extends StatefulWidget {
+  final Function(String) onSelectRole;
+
+  const _HoverTopBarPortail({required this.onSelectRole});
+
+  @override
+  State<_HoverTopBarPortail> createState() => _HoverTopBarPortailState();
+}
+
+class _HoverTopBarPortailState extends State<_HoverTopBarPortail> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  Timer? _closeTimer;
+
+  void _showOverlay() {
+    _closeTimer?.cancel();
+    if (_overlayEntry != null) return;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: 160,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 28),
+          child: MouseRegion(
+            onEnter: (_) => _cancelCloseTimer(),
+            onExit: (_) => _scheduleClose(),
+            child: Material(
+              elevation: 12,
+              borderRadius: BorderRadius.circular(4),
+              color: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    'Étudiant',
+                    'Enseignant',
+                    'Staff',
+                    'Décanat',
+                    'Comptable',
+                  ].map((role) => _HoverSubMenuItem(
+                    title: role,
+                    onTap: () {
+                      _removeOverlay();
+                      widget.onSelectRole(role);
+                    },
+                  )).toList(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _scheduleClose() {
+    _closeTimer?.cancel();
+    _closeTimer = Timer(const Duration(milliseconds: 150), () {
+      _removeOverlay();
+    });
+  }
+
+  void _cancelCloseTimer() {
+    _closeTimer?.cancel();
+  }
+
+  void _removeOverlay() {
+    _closeTimer?.cancel();
+    if (_overlayEntry != null) {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _closeTimer?.cancel();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: MouseRegion(
+        onEnter: (_) => _showOverlay(),
+        onExit: (_) => _scheduleClose(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.person_rounded, color: Colors.white, size: 14),
+            SizedBox(width: 5),
+            Text(
+              'Portail',
+              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 14),
+          ],
+        ),
       ),
     );
   }
