@@ -31,6 +31,8 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearchOpen = false;
 
   void _openLogin(String role) {
     ref.read(loginOverlayProvider.notifier).state = role;
@@ -57,18 +59,34 @@ class _HomePageState extends ConsumerState<HomePage> {
         children: [
           CustomScrollView(
             slivers: [
-              // Top Information Bars
+              // Top Information Bar (Modèle UAC)
               SliverToBoxAdapter(
                 child: Column(
                   children: [
                     Container(
                       width: double.infinity,
-                      color: AppColors.darkGrey,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Text(
-                        'Avez-vous une question ? +243 814 313 997',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      color: const Color(0xFF2D3E50),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Avez-vous une question ? +243 994 345 975',
+                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                          if (!Responsive.isMobile(context))
+                            Row(
+                              children: [
+                                _headerTopLink('Alumni', 'https://alumni.uaconline.edu.cd/public/'),
+                                const Text(' | ', style: TextStyle(color: Colors.white38)),
+                                _headerTopLink('Mail Pro', 'https://webmail.extrahoster.com/'),
+                                const Text(' | ', style: TextStyle(color: Colors.white38)),
+                                _headerTopLink('Portail Étudiant', () => _openLogin('Étudiant')),
+                                const Text(' | ', style: TextStyle(color: Colors.white38)),
+                                _headerTopLink('Portail Enseignant', () => _openLogin('Enseignant')),
+                              ],
+                            ),
+                        ],
                       ),
                     ),
                     Align(
@@ -84,12 +102,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                           children: [
                             TextButton(
                               onPressed: () => _navigateTo(const ELearningPage()),
-                              child: const Text('📚 E-Bibliothèque', style: TextStyle(color: Colors.white, fontSize: 12)),
+                              child: const Text('📚 Bibliothèque Numérique', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
-                            const Text('|', style: TextStyle(color: Colors.white)),
+                            const Text('|', style: TextStyle(color: Colors.white70)),
                             TextButton(
                               onPressed: () {},
-                              child: const Text('✨ Étincelle', style: TextStyle(color: Colors.white, fontSize: 12)),
+                              child: const Text('✨ Revue Étincelle', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -99,13 +117,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // Premium Sliver AppBar
+              // Main Navigation Header
               SliverAppBar(
                 expandedHeight: 0,
                 floating: true,
                 pinned: true,
-                elevation: 0,
-                backgroundColor: Colors.white.withOpacity(0.85),
+                elevation: 2,
+                backgroundColor: Colors.white.withOpacity(0.95),
                 automaticallyImplyLeading: false,
                 flexibleSpace: ClipRect(
                   child: BackdropFilter(
@@ -145,19 +163,39 @@ class _HomePageState extends ConsumerState<HomePage> {
                       children: [
                         _navItem('ACCUEIL', onTap: () {}),
                         _navDropdown('À PROPOS', {
-                          'Galerie': const GalleryPage(),
+                          'Alumni': const NewsPage(),
+                          'Galerie photos': const GalleryPage(),
+                          'Personnel': const CommitteePage(),
+                          'Calendrier': const CalendarPage(),
                           'Hymne': const AnthemPage(),
                           'Historique': const HistoryPage(),
-                          'Mission': const MissionVisionPage(),
+                          'Mission et Vision': const MissionVisionPage(),
                           'Statuts': const StatutesPage(),
                         }),
                         _navItem('HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
-                        _navItem('CALENDRIER', onTap: () => _navigateTo(const CalendarPage())),
-                        _navItem('E-LEARNING', onTap: () => _navigateTo(const ELearningPage())),
+                        _navDropdown('DOMAINE', {
+                          'Sciences de l\'Homme et de la Société': const ELearningPage(),
+                          'Sciences Economiques et de Gestion': const ELearningPage(),
+                          'Sciences Agronomiques et Environnement': const ELearningPage(),
+                          'Sciences et Technologie': const ELearningPage(),
+                          'Sciences Psychologiques de l\'Education': const ELearningPage(),
+                        }),
+                        _navDropdown('E-LEARNING', {
+                          'Portail Enseignant': const ELearningPage(),
+                          'Portail Etudiant': const ELearningPage(),
+                        }),
+                        _navDropdown('INTRANET', {
+                          'Décanat': const ELearningPage(),
+                          'Staff': const ELearningPage(),
+                        }),
                         _navItem('CONTACT', onTap: () => _navigateTo(const ContactPage())),
                       ],
                     ),
-                  const SizedBox(width: 10),
+                  IconButton(
+                    icon: Icon(_isSearchOpen ? Icons.close : Icons.search_rounded, color: AppColors.primaryBlue),
+                    onPressed: () => setState(() => _isSearchOpen = !_isSearchOpen),
+                  ),
+                  const SizedBox(width: 5),
                   _portalButton(),
                   const SizedBox(width: 5),
                   IconButton(
@@ -168,7 +206,38 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ],
               ),
 
-              // Hero Slider
+              // Search Overlay Bar
+              if (_isSearchOpen)
+                SliverToBoxAdapter(
+                  child: Container(
+                    color: const Color(0xFF2D3E50),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: TextField(
+                          controller: _searchController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Rechercher sur le site (cours, actualités, événements)...',
+                            hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+                            prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.arrow_forward, color: AppColors.accentYellow),
+                              onPressed: () {},
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.1),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Hero Slider / Carousel
               SliverToBoxAdapter(
                 child: HeroSlider(
                   isLoginVisible: showLogin,
@@ -176,17 +245,27 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // News Section
+              // Quick Action Buttons Bar (4 Buttons like Reference Site)
+              SliverToBoxAdapter(
+                child: _QuickButtonsBar(),
+              ),
+
+              // Annonce Section (Modèle UAC - Fond sombre)
+              SliverToBoxAdapter(
+                child: _AnnouncementSection(),
+              ),
+
+              // Nouvelles Récentes Section
               SliverToBoxAdapter(
                 child: _NewsSection(),
               ),
 
-              // Gallery Section
+              // Gallery Strip Section (Défilé Photos)
               SliverToBoxAdapter(
-                child: _GalleryPreviewSection(),
+                child: _GalleryBannerStrip(),
               ),
 
-              // Stats Section (Prestige / Chiffres)
+              // Stats Section (L'Institut en Chiffres)
               SliverToBoxAdapter(
                 child: Consumer(
                   builder: (context, ref, child) {
@@ -196,17 +275,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     return statsAsync.when(
                       data: (stats) => Container(
                         width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          vertical: isMobile ? 60 : 100, 
-                          horizontal: 20
-                        ),
+                        padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
                         decoration: const BoxDecoration(
-                          color: AppColors.deepNavy,
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/slider2.jpg'),
-                            fit: BoxFit.cover,
-                            opacity: 0.08,
-                          ),
+                          color: Color(0xFF2D3E50),
                         ),
                         child: Center(
                           child: Container(
@@ -218,7 +289,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   title: 'L\'Institut en Chiffres',
                                   isDark: true,
                                 ),
-                                const SizedBox(height: 60),
+                                const SizedBox(height: 50),
                                 Wrap(
                                   spacing: 25,
                                   runSpacing: 25,
@@ -242,19 +313,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // Departments Section
+              // Domains / Nos Domaines Section
               SliverToBoxAdapter(
-                child: _DepartmentsSection(),
+                child: _DomainsSection(),
+              ),
+
+              // Committee Section (Membres du COGE)
+              SliverToBoxAdapter(
+                child: _CommitteeSection(),
               ),
 
               // Values Section
               SliverToBoxAdapter(
                 child: _ValuesSection(),
-              ),
-
-              // Comité (COGE) Section
-              SliverToBoxAdapter(
-                child: _CommitteeSection(),
               ),
 
               // Footer
@@ -280,6 +351,16 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  Widget _headerTopLink(String text, dynamic target) {
+    return InkWell(
+      onTap: () {
+        if (target is Widget) _navigateTo(target);
+        if (target is Function) target();
+      },
+      child: Text(text, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+    );
+  }
+
   Widget _buildStatCard(IconData icon, String value, String label, BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
     final bool isTablet = Responsive.isTablet(context);
@@ -296,13 +377,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         width: width,
         padding: EdgeInsets.all(isMobile ? 18 : 28),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.07),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.15)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
-              blurRadius: 30,
+              blurRadius: 20,
               offset: const Offset(0, 10),
             ),
           ],
@@ -354,7 +435,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         style: const TextStyle(
           color: AppColors.textMain,
           fontWeight: FontWeight.w700,
-          fontSize: 13,
+          fontSize: 12,
           letterSpacing: 0.5
         ),
       ),
@@ -362,21 +443,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _navDropdown(String title, Map<String, Widget> items) {
-    final Map<String, IconData> icons = {
-      'Galerie': Icons.photo_library_outlined,
-      'Hymne': Icons.music_note_outlined,
-      'Historique': Icons.history_edu_outlined,
-      'Mission': Icons.track_changes_outlined,
-      'Statuts': Icons.description_outlined,
-    };
-
     return PopupMenuButton<Widget>(
       offset: const Offset(0, 45),
       elevation: 20,
       shadowColor: Colors.black.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -385,20 +458,19 @@ class _HomePageState extends ConsumerState<HomePage> {
               style: const TextStyle(
                 color: AppColors.textMain,
                 fontWeight: FontWeight.w700,
-                fontSize: 13,
+                fontSize: 12,
                 letterSpacing: 0.5,
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: AppColors.textMuted),
+            const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textMuted),
           ],
         ),
       ),
       onSelected: (page) => _navigateTo(page),
       itemBuilder: (context) => items.entries.map((entry) {
-        return _buildPopupMenuItem<Widget>(
+        return PopupMenuItem<Widget>(
           value: entry.value,
-          icon: icons[entry.key] ?? Icons.info_outline_rounded,
-          text: entry.key,
+          child: Text(entry.key, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         );
       }).toList(),
     );
@@ -406,47 +478,33 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _portalButton() {
     final bool isMobile = Responsive.isMobile(context);
-    final Map<String, IconData> portalIcons = {
-      'Étudiant': Icons.school_outlined,
-      'Enseignant': Icons.person_outline,
-      'Staff': Icons.badge_outlined,
-      'Décanat': Icons.gavel_outlined,
-      'Comptable': Icons.account_balance_wallet_outlined,
-    };
 
     return PopupMenuButton<String>(
       offset: Offset(0, isMobile ? 40 : 50),
       elevation: 20,
       shadowColor: Colors.black.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 14 : 22, 
-          vertical: isMobile ? 8 : 12
+          horizontal: isMobile ? 12 : 18, 
+          vertical: isMobile ? 8 : 10
         ),
         decoration: BoxDecoration(
-          gradient: AppColors.premiumGradient,
-          borderRadius: BorderRadius.circular(50),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withOpacity(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: const Color(0xFF2D3E50),
+          borderRadius: BorderRadius.circular(25),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.lock_person_outlined, color: Colors.white, size: isMobile ? 16 : 18),
-            SizedBox(width: isMobile ? 6 : 10),
+            Icon(Icons.account_circle, color: Colors.white, size: isMobile ? 16 : 18),
+            SizedBox(width: isMobile ? 6 : 8),
             Text(
               'PORTAIL',
               style: TextStyle(
                 color: Colors.white, 
                 fontWeight: FontWeight.w900, 
-                fontSize: isMobile ? 11 : 13,
-                letterSpacing: isMobile ? 1.0 : 1.5,
+                fontSize: isMobile ? 11 : 12,
+                letterSpacing: 1.0,
               ),
             ),
           ],
@@ -459,32 +517,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         'Staff',
         'Décanat',
         'Comptable'
-      ].map((role) => _buildPopupMenuItem<String>(
+      ].map((role) => PopupMenuItem<String>(
         value: role,
-        icon: portalIcons[role] ?? Icons.login_rounded,
-        text: role,
+        child: Text(role, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
       )).toList(),
-    );
-  }
-
-  PopupMenuItem<T> _buildPopupMenuItem<T>({required T value, required IconData icon, required String text}) {
-    return PopupMenuItem<T>(
-      value: value,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.primaryBlue),
-          const SizedBox(width: 15),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textMain,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -495,59 +531,36 @@ class _HomePageState extends ConsumerState<HomePage> {
       elevation: 20,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          bottomLeft: Radius.circular(40),
+          topLeft: Radius.circular(30),
+          bottomLeft: Radius.circular(30),
         ),
       ),
       child: Column(
         children: [
-          // Premium Header
           Container(
-            height: 250,
+            height: 220,
             width: double.infinity,
             decoration: const BoxDecoration(
-              gradient: AppColors.premiumGradient,
-              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40)),
-              image: DecorationImage(
-                image: AssetImage('assets/images/slider1.jpg'),
-                fit: BoxFit.cover,
-                opacity: 0.15,
-              ),
+              color: Color(0xFF2D3E50),
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30)),
             ),
             child: SafeArea(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.white,
-                      backgroundImage: AssetImage('assets/images/logo.jpg'),
-                    ),
+                  const CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.white,
+                    backgroundImage: AssetImage('assets/images/logo.jpg'),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 12),
                   const Text(
                     'ISTM MAHAGI',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 24,
-                      letterSpacing: 2,
-                    ),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: 2),
                   ),
                   const Text(
                     'L\'EXCELLENCE MÉDICALE',
-                    style: TextStyle(
-                      color: AppColors.accentYellow,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4,
-                    ),
+                    style: TextStyle(color: AppColors.accentYellow, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 3),
                   ),
                 ],
               ),
@@ -563,42 +576,33 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ExpansionTile(
                   leading: const Icon(Icons.info_rounded, color: AppColors.primaryBlue),
                   title: const Text('À PROPOS', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textMain, fontSize: 14)),
-                  childrenPadding: const EdgeInsets.only(left: 25),
+                  childrenPadding: const EdgeInsets.only(left: 20),
                   shape: const RoundedRectangleBorder(side: BorderSide.none),
                   children: [
-                    _drawerItem(Icons.photo_library_rounded, 'Galerie', onTap: () => _navigateTo(const GalleryPage())),
+                    _drawerItem(Icons.photo_library_rounded, 'Galerie photos', onTap: () => _navigateTo(const GalleryPage())),
                     _drawerItem(Icons.music_note_rounded, 'Hymne', onTap: () => _navigateTo(const AnthemPage())),
                     _drawerItem(Icons.history_edu_rounded, 'Historique', onTap: () => _navigateTo(const HistoryPage())),
-                    _drawerItem(Icons.track_changes_rounded, 'Mission', onTap: () => _navigateTo(const MissionVisionPage())),
+                    _drawerItem(Icons.track_changes_rounded, 'Mission et Vision', onTap: () => _navigateTo(const MissionVisionPage())),
                     _drawerItem(Icons.description_rounded, 'Statuts', onTap: () => _navigateTo(const StatutesPage())),
                   ],
                 ),
-                const SizedBox(height: 5),
-                _drawerItem(Icons.calendar_today_rounded, 'HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
+                _drawerItem(Icons.alarm_rounded, 'HORAIRE', onTap: () => _navigateTo(const CourseSchedulePage())),
                 _drawerItem(Icons.event_note_rounded, 'CALENDRIER', onTap: () => _navigateTo(const CalendarPage())),
                 _drawerItem(Icons.local_library_rounded, 'E-Bibliothèque', onTap: () => _navigateTo(const ELearningPage())),
-                _drawerItem(Icons.health_and_safety_rounded, 'Portail Santé', onTap: () {}),
                 _drawerItem(Icons.school_rounded, 'E-LEARNING', onTap: () => _navigateTo(const ELearningPage())),
                 _drawerItem(Icons.alternate_email_rounded, 'CONTACT', onTap: () => _navigateTo(const ContactPage())),
-                const Divider(height: 50, indent: 20, endIndent: 20),
+                const Divider(height: 40, indent: 20, endIndent: 20),
                 _drawerItem(Icons.vpn_key_rounded, 'PORTAIL', isHighlight: true, onTap: () => _openLogin('Étudiant')),
               ],
             ),
           ),
           
-          // Bottom Version
           Container(
-            padding: const EdgeInsets.all(30),
+            padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                const Text(
-                  'ISTM-MAHAGI 2026',
-                  style: TextStyle(color: AppColors.darkBlue, fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                Text(
-                  'Application Premium v1.0',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 9),
-                ),
+                const Text('ISTM-MAHAGI 2026', style: TextStyle(color: Color(0xFF2D3E50), fontWeight: FontWeight.bold, fontSize: 12)),
+                Text('Tous droits réservés', style: TextStyle(color: Colors.grey.shade500, fontSize: 10)),
               ],
             ),
           ),
@@ -614,24 +618,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         color: isActive 
           ? AppColors.primaryBlue.withOpacity(0.08) 
           : (isHighlight ? AppColors.accentYellow.withOpacity(0.15) : Colors.transparent),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        leading: Icon(
-          icon, 
-          color: isActive ? AppColors.primaryBlue : (isHighlight ? AppColors.accentYellow.withAlpha(200) : AppColors.textMain),
-          size: 22,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isActive ? AppColors.primaryBlue : AppColors.textMain,
-            fontWeight: isActive || isHighlight ? FontWeight.w900 : FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-        trailing: Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.grey.shade300),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        leading: Icon(icon, color: isActive ? AppColors.primaryBlue : (isHighlight ? AppColors.accentYellow : AppColors.textMain), size: 20),
+        title: Text(title, style: TextStyle(color: isActive ? AppColors.primaryBlue : AppColors.textMain, fontWeight: isActive || isHighlight ? FontWeight.w900 : FontWeight.w600, fontSize: 13)),
         onTap: () {
           if (onTap != null) {
             Navigator.pop(context);
@@ -643,56 +635,27 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-class _NewsSection extends ConsumerWidget {
+class _QuickButtonsBar extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final newsAsync = ref.watch(newsStreamProvider);
+  Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
-      color: const Color(0xFFF1F5F9), // Soft slate background
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 25 : 35, horizontal: 20),
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1280),
-          child: Column(
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 15,
+            alignment: WrapAlignment.center,
             children: [
-              const _SectionHeader(
-                subtitle: 'ACTUALITÉS ÉTUDIANTES & INSTITUTIONNELLES',
-                title: 'Les Dernières de l\'Institut',
-                isDark: false,
-              ),
-              const SizedBox(height: 50),
-              newsAsync.when(
-                data: (articles) {
-                  if (articles.isEmpty) return const Text("Aucune actualité pour le moment.", style: TextStyle(color: AppColors.textMuted));
-                  final int count = isMobile ? 1 : 3;
-                  final visibleArticles = articles.take(count).toList();
-                  return Column(
-                    children: [
-                      Wrap(
-                        spacing: 30,
-                        runSpacing: 30,
-                        alignment: WrapAlignment.center,
-                        children: visibleArticles
-                            .map((article) => _newsItem(
-                              context, 
-                              article.title, 
-                              "${article.date.day}/${article.date.month}/${article.date.year}", 
-                              article.imageUrl, 
-                              isMobile
-                            ))
-                            .toList(),
-                      ),
-                      const SizedBox(height: 50),
-                      _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
-              ),
+              _quickButton('Alumni', isMobile),
+              _quickButton('CIAQ', isMobile),
+              _quickButton('Bibliothèque numérique', isMobile),
+              _quickButton('Étincelle', isMobile),
             ],
           ),
         ),
@@ -700,126 +663,127 @@ class _NewsSection extends ConsumerWidget {
     );
   }
 
-  Widget _newsItem(BuildContext context, String title, String date, String image, bool isMobile) {
-    final double width = isMobile ? double.infinity : 440;
-
-    return PremiumFadeIn(
-      child: _HoverCard(
-        child: Container(
-          width: width,
-          constraints: const BoxConstraints(maxWidth: 480),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0F172A).withOpacity(0.06),
-                blurRadius: 40,
-                offset: const Offset(0, 15),
-              ),
-            ],
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                child: Stack(
-                  children: [
-                    image.startsWith('http') 
-                      ? Image.network(image, height: isMobile ? 200 : 260, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile))
-                      : Image.asset(image, height: isMobile ? 200 : 260, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile)),
-                    Positioned(
-                      top: 18,
-                      left: 18,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryBlue,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)],
-                        ),
-                        child: Text(
-                          date,
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title, 
-                      maxLines: 2, 
-                      overflow: TextOverflow.ellipsis, 
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900, 
-                        fontSize: isMobile ? 17 : 22, 
-                        color: AppColors.textMain,
-                        fontFamily: 'Playfair Display',
-                        height: 1.25
-                      )
-                    ),
-                    const SizedBox(height: 20),
-                    TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage())),
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'LIRE LA SUITE', 
-                            style: TextStyle(
-                              color: AppColors.primaryBlue, 
-                              fontWeight: FontWeight.w900, 
-                              fontSize: 11,
-                              letterSpacing: 1.5
-                            )
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primaryBlue),
-                        ],
-                      )
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _imagePlaceholder(bool isMobile) {
+  Widget _quickButton(String title, bool isMobile) {
     return Container(
-      height: isMobile ? 200 : 260,
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: AppColors.deepGradient,
+      width: isMobile ? (150) : 220,
+      height: 55,
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D3E50),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
       ),
-      child: const Center(
-        child: Icon(Icons.newspaper_rounded, color: Colors.white38, size: 48),
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: isMobile ? 12 : 14,
+          ),
+        ),
       ),
     );
   }
 }
 
-class _GalleryPreviewSection extends ConsumerWidget {
+class _AnnouncementSection extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final galleryAsync = ref.watch(galleryStreamProvider);
+  Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      color: const Color(0xFF2D3E50),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 50 : 80, horizontal: 20),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            children: [
+              const Text(
+                'Annonce',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, fontFamily: 'Playfair Display'),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15)],
+                ),
+                child: const Text(
+                  'DÉBUT EFFECTIF DES COURS À L’ISTM MAHAGI',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Container(
+                padding: EdgeInsets.all(isMobile ? 20 : 35),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: Text(
+                  'À l’ensemble de la communauté estudiantine de notre Alma Mater, l’ISTM Mahagi.\n\n'
+                  'Nous vous rappelons que les enseignements débutent effectivement ce lundi 02 novembre 2026 dans toutes les promotions de l’ISTM Mahagi.\n\n'
+                  'Vous êtes invités à consulter le site web et l\'application mobile de l’institution afin de prendre connaissance des horaires des cours et des auditoires attribués à vos promotions respectives.\n\n'
+                  'Nous comptons sur votre présence, votre ponctualité et votre engagement dès le premier jour des enseignements.\n\n'
+                  'Bon début de cours à toutes et à tous !',
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: isMobile ? 13 : 15, height: 1.7, fontWeight: FontWeight.w400),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NewsSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMobile = Responsive.isMobile(context);
+
+    // Actualités Référence UAC
+    final List<Map<String, String>> referenceNews = [
+      {
+        'title': 'ISTM Mahagi : Nomination des membres du personnel technique et ouvrier pour l’année 2026-2027...',
+        'date': '02 Nov',
+        'time': '10:52:15',
+        'location': 'Cabinet du Recteur',
+        'image': 'https://uaconline.edu.cd/imagenews/NN18.jpeg',
+      },
+      {
+        'title': 'Rectorat : Affectation des autorités décanales pour l’année académique 2026-2027...',
+        'date': '02 Nov',
+        'time': '10:48:50',
+        'location': 'Cabinet du Recteur',
+        'image': 'https://uaconline.edu.cd/imagenews/NN14.jpeg',
+      },
+      {
+        'title': 'Encadrements pédagogiques : Des Alumni transmettent le flambeau de l’expérience aux jeunes étudiants...',
+        'date': '02 Nov',
+        'time': '10:46:39',
+        'location': 'Cabinet du Recteur',
+        'image': 'https://uaconline.edu.cd/imagenews/NN11.jpeg',
+      },
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
       color: Colors.white,
       child: Center(
         child: Container(
@@ -827,34 +791,29 @@ class _GalleryPreviewSection extends ConsumerWidget {
           child: Column(
             children: [
               const _SectionHeader(
-                subtitle: 'DOCUMENTATION VISUELLE',
-                title: 'L\'Institut en Images',
+                subtitle: 'ACTUALITÉS ÉTUDIANTES & INSTITUTIONNELLES',
+                title: 'Nouvelles Récentes',
+                isDark: false,
               ),
               const SizedBox(height: 50),
-              galleryAsync.when(
-                data: (items) => items.isEmpty
-                    ? const Text("La galerie est vide pour le moment.", style: TextStyle(color: AppColors.textMuted))
-                    : Column(
-                      children: [
-                        Wrap(
-                          spacing: 30,
-                          runSpacing: 30,
-                          alignment: WrapAlignment.center,
-                          children: items.take(isMobile ? 2 : 3).map((item) => _galleryCard(
-                            context,
-                            item.legende,
-                            "${item.date.day}/${item.date.month}/${item.date.year}",
-                            item.imageUrl,
-                            isMobile
-                          )).toList(),
-                        ),
-                        const SizedBox(height: 50),
-                        _buildSeeMoreButton(context, const GalleryPage(), "VOIR TOUTE LA GALERIE"),
-                      ],
-                    ),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              Wrap(
+                spacing: 30,
+                runSpacing: 30,
+                alignment: WrapAlignment.center,
+                children: referenceNews
+                    .map((article) => _newsItem(
+                      context, 
+                      article['title']!, 
+                      article['date']!, 
+                      article['time']!, 
+                      article['location']!, 
+                      article['image']!, 
+                      isMobile
+                    ))
+                    .toList(),
               ),
+              const SizedBox(height: 50),
+              _buildSeeMoreButton(context, const NewsPage(), "VOIR TOUTES LES ACTUALITÉS"),
             ],
           ),
         ),
@@ -862,22 +821,22 @@ class _GalleryPreviewSection extends ConsumerWidget {
     );
   }
 
-  Widget _galleryCard(BuildContext context, String title, String date, String image, bool isMobile) {
-    final double width = isMobile ? double.infinity : 480;
+  Widget _newsItem(BuildContext context, String title, String date, String time, String location, String image, bool isMobile) {
+    final double width = isMobile ? double.infinity : 370;
 
     return PremiumFadeIn(
       child: _HoverCard(
         child: Container(
           width: width,
-          constraints: const BoxConstraints(maxWidth: 520),
+          constraints: const BoxConstraints(maxWidth: 420),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF0F172A).withOpacity(0.08),
-                blurRadius: 40,
-                offset: const Offset(0, 15),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
               ),
             ],
             border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -886,25 +845,33 @@ class _GalleryPreviewSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 child: Stack(
                   children: [
-                    image.startsWith('http') 
-                      ? Image.network(image, height: isMobile ? 210 : 300, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile))
-                      : Image.asset(image, height: isMobile ? 210 : 300, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imagePlaceholder(isMobile)),
+                    Image.network(
+                      image, 
+                      height: isMobile ? 200 : 240, 
+                      width: double.infinity, 
+                      fit: BoxFit.cover, 
+                      errorBuilder: (_, __, ___) => Container(
+                        height: isMobile ? 200 : 240,
+                        color: const Color(0xFF2D3E50),
+                        child: const Center(child: Icon(Icons.newspaper, color: Colors.white38, size: 48)),
+                      )
+                    ),
                     Positioned(
-                      top: 18,
-                      left: 18,
+                      top: 15,
+                      left: 15,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: AppColors.primaryBlue,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)],
                         ),
                         child: Text(
                           date,
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -912,7 +879,7 @@ class _GalleryPreviewSection extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(28),
+                padding: const EdgeInsets.all(25),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -922,32 +889,34 @@ class _GalleryPreviewSection extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis, 
                       style: TextStyle(
                         fontWeight: FontWeight.w900, 
-                        fontSize: isMobile ? 18 : 22, 
+                        fontSize: isMobile ? 16 : 18, 
                         color: AppColors.textMain,
                         fontFamily: 'Playfair Display',
-                        height: 1.25
+                        height: 1.3
                       )
                     ),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textMuted),
+                        const SizedBox(width: 5),
+                        Text(time, style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
+                        const SizedBox(width: 15),
+                        const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textMuted),
+                        const SizedBox(width: 5),
+                        Expanded(child: Text(location, style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
                     const SizedBox(height: 20),
-                    TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryPage())),
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'VOIR L\'IMAGE', 
-                            style: TextStyle(
-                              color: AppColors.primaryBlue, 
-                              fontWeight: FontWeight.w900, 
-                              fontSize: 11,
-                              letterSpacing: 1.5
-                            )
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primaryBlue),
-                        ],
-                      )
+                    ElevatedButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsPage())),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D3E50),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: const Text('LIRE PLUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1)),
                     ),
                   ],
                 ),
@@ -958,60 +927,141 @@ class _GalleryPreviewSection extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _imagePlaceholder(bool isMobile) {
+class _GalleryBannerStrip extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
+    final List<String> galleryImages = [
+      'https://uaconline.edu.cd/imagegalerie/rentreeacademique9.JPG',
+      'https://uaconline.edu.cd/imagegalerie/rentreeacademique8.JPG',
+      'https://uaconline.edu.cd/imagegalerie/rentreeacademique7.JPG',
+      'https://uaconline.edu.cd/imagegalerie/rentreeacademique6.JPG',
+      'https://uaconline.edu.cd/imagegalerie/rentreeacademique5.JPG',
+      'https://uaconline.edu.cd/imagegalerie/rentreeacademique3.JPG',
+    ];
+
     return Container(
-      height: isMobile ? 210 : 300,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: AppColors.deepGradient,
-      ),
-      child: const Center(
-        child: Icon(Icons.photo_library_rounded, color: Colors.white38, size: 56),
+      color: const Color(0xFF2D3E50),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60, horizontal: 20),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            children: [
+              const Text('GALERIE EN IMAGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 2)),
+              const SizedBox(height: 30),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: galleryImages.map((img) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: InkWell(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryPage())),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15)],
+                        ),
+                        child: CircleAvatar(
+                          radius: isMobile ? 45 : 65,
+                          backgroundImage: NetworkImage(img),
+                        ),
+                      ),
+                    ),
+                  )).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _DepartmentsSection extends ConsumerWidget {
+class _DomainsSection extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final facultiesAsync = ref.watch(homeFacultiesProvider);
+  Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
+
+    final List<Map<String, String>> domains = [
+      {
+        'id': 'SHS',
+        'title': 'Sciences de l\'Homme et de la Société',
+        'email': 'schommeetsociete@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagedomaine/lettres.jpg',
+      },
+      {
+        'id': 'SEG',
+        'title': 'Sciences Economiques et de Gestion',
+        'email': 'sceconomiquesetgestion@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagedomaine/economie.jpg',
+      },
+      {
+        'id': 'SAE',
+        'title': 'Sciences Agronomiques et Environnement',
+        'email': 'scdeveloppement@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagedomaine/developpement.jpg',
+      },
+      {
+        'id': 'ST',
+        'title': 'Sciences et Technologie',
+        'email': 'scpolytechnique@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagedomaine/polytechnique.jpg',
+      },
+      {
+        'id': 'SPE',
+        'title': 'Sciences Psychologiques de l\'Education',
+        'email': 'scpsychologiques@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagedomaine/psychologie.jpg',
+      },
+    ];
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
-      color: const Color(0xFFF8FAFC), // Soft off-white surface
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
+      color: const Color(0xFFF8FAFC),
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1280),
           child: Column(
             children: [
               const _SectionHeader(
-                subtitle: 'NOS FILIÈRES D\'EXCELLENCE',
-                title: 'Programmes de Haut Niveau',
+                subtitle: 'ORGANISATION ACADÉMIQUE LMD',
+                title: 'NOS DOMAINES',
               ),
-              const SizedBox(height: 60),
-              facultiesAsync.when(
-                data: (faculties) {
-                  if (faculties.isEmpty) {
-                    return const Text("Aucun domaine de formation enregistré pour le moment.", style: TextStyle(color: AppColors.textMuted));
-                  }
-                  return Wrap(
-                    spacing: 30,
-                    runSpacing: 30,
-                    alignment: WrapAlignment.center,
-                    children: faculties.map((f) => _deptCard(
-                      Icons.school_rounded, 
-                      f.nomFaculte, 
-                      "Formation d'élite en ${f.nomFaculte} avec un encadrement académique rigoureux.",
-                      isMobile
-                    )).toList(),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              const SizedBox(height: 15),
+              const Text(
+                'L\'ISTM Mahagi organise 5 domaines principaux d\'enseignement. Dans chaque domaine, il y a les différentes filières de formation d\'élite. Cliquez afin de lire le détail.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textMuted, fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 50),
+              Wrap(
+                spacing: 30,
+                runSpacing: 30,
+                alignment: WrapAlignment.center,
+                children: domains.map((d) => _domainCard(context, d['title']!, d['email']!, d['image']!, isMobile)).toList(),
+              ),
+              const SizedBox(height: 50),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D3E50),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15)],
+                ),
+                child: const Text(
+                  'Noverim Me Noverim Te >>>',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 2),
+                ),
               ),
             ],
           ),
@@ -1020,65 +1070,65 @@ class _DepartmentsSection extends ConsumerWidget {
     );
   }
 
-  Widget _deptCard(IconData icon, String title, String desc, bool isMobile) {
+  Widget _domainCard(BuildContext context, String title, String email, String image, bool isMobile) {
+    final double width = isMobile ? double.infinity : 370;
+
     return PremiumFadeIn(
       child: _HoverCard(
         child: Container(
-          width: isMobile ? double.infinity : 380,
-          constraints: const BoxConstraints(minHeight: 290, maxWidth: 420),
-          padding: const EdgeInsets.all(35),
+          width: width,
+          constraints: const BoxConstraints(maxWidth: 400),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withOpacity(0.05),
-                blurRadius: 40,
-                offset: const Offset(0, 15),
+                color: const Color(0xFF0F172A).withOpacity(0.06),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
               ),
             ],
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(icon, color: AppColors.primaryBlue, size: 28),
-                  ),
-                  const SizedBox(height: 22),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900, 
-                      fontSize: 20, 
-                      color: AppColors.textMain,
-                      fontFamily: 'Playfair Display'
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    desc,
-                    style: const TextStyle(
-                      color: AppColors.textMuted, 
-                      fontSize: 14, 
-                      height: 1.6,
-                      fontWeight: FontWeight.w500
-                    ),
-                  ),
-                ],
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Image.network(
+                  image, 
+                  height: 200, 
+                  width: double.infinity, 
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(height: 200, color: const Color(0xFF2D3E50), child: const Icon(Icons.school, color: Colors.white38, size: 48)),
+                ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: Icon(Icons.arrow_right_alt_rounded, color: AppColors.primaryBlue, size: 28),
+              Padding(
+                padding: const EdgeInsets.all(25),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title, 
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.textMain, fontFamily: 'Playfair Display')
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      email, 
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 12, fontWeight: FontWeight.w500)
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D3E50),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('LIRE PLUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -1091,12 +1141,49 @@ class _DepartmentsSection extends ConsumerWidget {
 class _CommitteeSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final committeeAsync = ref.watch(committeeStreamProvider);
     final isMobile = Responsive.isMobile(context);
+
+    final List<Map<String, String>> cogeMembers = [
+      {
+        'name': 'Dr. KAVULA MAWAZO Sikirivwa, PhD',
+        'title': 'Professeur Associé',
+        'role': 'Recteur',
+        'email': 'rectorat@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagecoge/mawazo.jpg',
+      },
+      {
+        'name': 'Dr. KANYORORO KISALI Jean-Chrysostome, PhD',
+        'title': 'Professeur',
+        'role': 'Secrétaire Général Académique',
+        'email': 'academique@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagecoge/kanyororo.jpg',
+      },
+      {
+        'name': 'Dr. KASEREKA KIBANDA Wilfrid, PhD',
+        'title': 'Professeur',
+        'role': 'Secrétaire Général de Recherche',
+        'email': 'contact@ishango-uac.net',
+        'image': 'https://uaconline.edu.cd/imagecoge/kibanda.jpg',
+      },
+      {
+        'name': 'Dr. PALUKU KAMILI Jean-Paul, PhD',
+        'title': 'Professeur Associé',
+        'role': 'Secrétaire Général Administratif',
+        'email': 'administratif@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagecoge/kamili.jpg',
+      },
+      {
+        'name': 'Ir. KATEMBO KASOLENE Moïse',
+        'title': 'Assistant Deux',
+        'role': 'Administrateur de Budget',
+        'email': 'administeur.budget@uaconline.edu.cd',
+        'image': 'https://uaconline.edu.cd/imagecoge/kasolene.jpg',
+      },
+    ];
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
       color: Colors.white,
       child: Center(
         child: Container(
@@ -1104,35 +1191,22 @@ class _CommitteeSection extends ConsumerWidget {
           child: Column(
             children: [
               const _SectionHeader(
-                subtitle: 'COMITÉ DE GESTION (COGE)',
-                title: 'Les Garants de l\'Excellence',
+                subtitle: 'AUTORITÉS INSTITUTIONNELLES',
+                title: 'Membres du COGE',
               ),
-              const SizedBox(height: 60),
-              committeeAsync.when(
-                data: (members) {
-                  if (members.isEmpty) return const Text("Information bientôt disponible.", style: TextStyle(color: AppColors.textMuted));
-                  final visibleMembers = members.take(3).toList();
-                  return Column(
-                    children: [
-                      Wrap(
-                        spacing: 40,
-                        runSpacing: 40,
-                        alignment: WrapAlignment.center,
-                        children: visibleMembers.map((m) => _memberCard(
-                          context,
-                          m.fonction, 
-                          m.nomComplet, 
-                          m.photoMembre,
-                          isMobile
-                        )).toList(),
-                      ),
-                      const SizedBox(height: 50),
-                      _buildSeeMoreButton(context, const CommitteePage(), "VOIR TOUT LE COMITÉ"),
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text("Erreur : $e", style: const TextStyle(color: Colors.redAccent)),
+              const SizedBox(height: 50),
+              Wrap(
+                spacing: 25,
+                runSpacing: 25,
+                alignment: WrapAlignment.center,
+                children: cogeMembers.map((m) => _memberCard(
+                  m['name']!, 
+                  m['title']!, 
+                  m['role']!, 
+                  m['email']!, 
+                  m['image']!, 
+                  isMobile
+                )).toList(),
               ),
             ],
           ),
@@ -1141,90 +1215,67 @@ class _CommitteeSection extends ConsumerWidget {
     );
   }
 
-  Widget _memberCard(BuildContext context, String role, String name, String image, bool isMobile) {
+  Widget _memberCard(String name, String title, String role, String email, String image, bool isMobile) {
     return PremiumFadeIn(
       child: _HoverCard(
         child: Container(
-          width: isMobile ? double.infinity : 320,
-          constraints: const BoxConstraints(maxWidth: 360),
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          width: isMobile ? double.infinity : 230,
+          constraints: const BoxConstraints(maxWidth: 260),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF0F172A).withOpacity(0.04),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.white, 
-                  shape: BoxShape.circle, 
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0F172A).withOpacity(0.08), 
-                      blurRadius: 25,
-                      offset: const Offset(0, 8),
-                    )
-                  ]
-                ),
-                child: CircleAvatar(
-                  radius: isMobile ? 55 : 75,
-                  backgroundColor: Colors.white,
-                  backgroundImage: (image.isNotEmpty && image.startsWith('http')) 
-                      ? NetworkImage(image) 
-                      : const AssetImage('assets/images/logo.jpg') as ImageProvider,
-                ),
-              ),
-              const SizedBox(height: 22),
-              Text(
-                name.toUpperCase(),
-                style: TextStyle(
-                  fontWeight: FontWeight.w900, 
-                  fontSize: isMobile ? 15 : 17, 
-                  color: AppColors.textMain, 
-                  fontFamily: 'Playfair Display',
-                  letterSpacing: 0.5
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  role.toUpperCase(),
-                  style: TextStyle(
-                    color: AppColors.primaryBlue, 
-                    fontSize: isMobile ? 9 : 11, 
-                    fontWeight: FontWeight.w900, 
-                    letterSpacing: 1.5
-                  ),
-                  textAlign: TextAlign.center,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.network(
+                  image, 
+                  height: 180, 
+                  width: double.infinity, 
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(height: 180, color: const Color(0xFF2D3E50), child: const Icon(Icons.person, color: Colors.white38, size: 48)),
                 ),
               ),
               const SizedBox(height: 18),
-              TextButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommitteePage())),
-                child: const Text(
-                  'VOIR FICHE',
-                  style: TextStyle(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 10,
-                    letterSpacing: 1.5
-                  ),
+              Text(
+                name,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: AppColors.textMain),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: Text(
+                  role,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.primaryBlue, fontSize: 11, fontWeight: FontWeight.w900),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                email,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -1241,14 +1292,9 @@ class _ValuesSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
       decoration: const BoxDecoration(
-        color: AppColors.deepNavy,
-        image: DecorationImage(
-          image: AssetImage('assets/images/slider3.jpg'),
-          fit: BoxFit.cover,
-          opacity: 0.05,
-        ),
+        color: Color(0xFF2D3E50),
       ),
       child: Center(
         child: Container(
@@ -1260,7 +1306,7 @@ class _ValuesSection extends StatelessWidget {
                 title: 'Des Valeurs d\'Excellence',
                 isDark: true,
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 50),
               Wrap(
                 spacing: 40,
                 runSpacing: 40,
@@ -1358,8 +1404,8 @@ class _ContactQuickInfo extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 20),
-      color: const Color(0xFFF1F5F9), // Soft slate
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 90, horizontal: 20),
+      color: const Color(0xFFF1F5F9),
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1280),
@@ -1369,15 +1415,15 @@ class _ContactQuickInfo extends StatelessWidget {
                 subtitle: 'NOUS CONTACTER',
                 title: 'À Votre Écoute',
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 50),
               Wrap(
                 spacing: 30,
                 runSpacing: 30,
                 alignment: WrapAlignment.center,
                 children: [
                   _infoTile(Icons.location_on_rounded, 'Localisation', 'RDC, Ituri, Ville de Mahagi', isMobile),
-                  _infoTile(Icons.phone_rounded, 'Ligne Directe', '+243 814 313 997', isMobile),
-                  _infoTile(Icons.alternate_email_rounded, 'Email Officiel', 'info@istm-mahagi.edu', isMobile),
+                  _infoTile(Icons.phone_rounded, 'Ligne Directe', '+243 994 345 975', isMobile),
+                  _infoTile(Icons.alternate_email_rounded, 'Email Officiel', 'contact@uaconline.edu.cd', isMobile),
                 ],
               ),
             ],
@@ -1395,7 +1441,7 @@ class _ContactQuickInfo extends StatelessWidget {
         padding: const EdgeInsets.all(35),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF0F172A).withOpacity(0.04),
@@ -1502,15 +1548,14 @@ Widget _buildSeeMoreButton(BuildContext context, Widget target, String label) {
   return PremiumFadeIn(
     child: ElevatedButton.icon(
       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => target)),
-      icon: const Icon(Icons.add_rounded, size: 18),
+      icon: const Icon(Icons.chevron_right_rounded, size: 20),
       label: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 11)),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: const Color(0xFF2D3E50),
         foregroundColor: Colors.white,
-        elevation: 8,
-        shadowColor: AppColors.primaryBlue.withOpacity(0.3),
+        elevation: 6,
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
   );
